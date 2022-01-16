@@ -1,6 +1,6 @@
 # Embedded SQL Statement (ESQL-Stmt)
 
-The project is to rewrite from scratch a part of ESI-Apps. **ESI-Apps** is a Java framework and engine that process SQL Statement definition inside a Java Project, it allow developers to create REST API Service easily, and detaching the SQL works of Java Developer to Database Developer, **avoid writing SQL code in Java code** (but *not like the way ORM does*), split works by **letting Database Developers do their works with SQL only code** and **Java developers do UI/assembled works**. A backend business application project can be written by purely SQL, if not much customization logic and no integration.
+The project is to rewrite from scratch the ESI-DBTools, a part of ESI-Apps. **ESI-Apps** is a Java framework and engine that process SQL Statement definition inside a Java Project, it allow developers to create REST API Service easily, and detaching the SQL works of Java Developer to Database Developer, **avoid writing SQL code in Java code** (but *not like the way ORM does*), split works by **letting Database Developers do their works with SQL only code** and **Java developers do UI/assembled works**. A backend business application project can be written by purely SQL, if not much customization logic and no integration.
 
 Along with ESI-Apps, ESI-Report is to create reports by SQL works only, and some of XML/XSLT code for definition. All projects based on an important part of ESI-Apps: SQLStmt (named **sqlstmt3** library).
 
