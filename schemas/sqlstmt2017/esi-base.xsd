@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+targetNamespace="http://esi.vn/2017/esi-base" xmlns:esi="http://esi.vn/2017/esi-base">
+	
+	<xs:simpleType name="datatype">
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="boolean" />
+			<xs:enumeration value="byte" />
+			<xs:enumeration value="short" />
+			<xs:enumeration value="int" />
+			<xs:enumeration value="long" />
+
+			<xs:enumeration value="decimal" />
+			<xs:enumeration value="float" />
+			<xs:enumeration value="double" />
+
+			<xs:enumeration value="date" />
+			<xs:enumeration value="time" />
+			<xs:enumeration value="datetime" />
+			<xs:enumeration value="timestamp" />
+
+			<xs:enumeration value="string" />
+			<xs:enumeration value="nstring" />
+
+			<xs:enumeration value="clob" />
+			<xs:enumeration value="nclob" />
+			<xs:enumeration value="blob" />
+			<xs:enumeration value="xml" />
+
+			<xs:enumeration value="binary" />
+			<xs:enumeration value="bytes" />
+
+			<xs:enumeration value="boolean[]" />
+			<xs:enumeration value="byte[]" />
+			<xs:enumeration value="short[]" />
+			<xs:enumeration value="int[]" />
+			<xs:enumeration value="long[]" />
+
+			<xs:enumeration value="decimal[]" />
+			<xs:enumeration value="float[]" />
+			<xs:enumeration value="double[]" />
+
+			<xs:enumeration value="date[]" />
+			<xs:enumeration value="time[]" />
+			<xs:enumeration value="datetime[]" />
+			<xs:enumeration value="timestamp[]" />
+
+			<xs:enumeration value="string[]" />
+			<xs:enumeration value="nstring[]" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:attributeGroup name="attr-type">
+		<xs:attribute name="type" type="esi:datatype" use="required" />
+	</xs:attributeGroup>
+
+	<xs:attributeGroup name="attr-in-out">
+		<xs:attribute name="format" type="xs:string" />
+		<xs:attribute name="locale" type="xs:string" />
+		<xs:attribute name="currency" type="xs:string" />
+		<xs:attribute name="monetary" type="xs:boolean" />
+		<xs:attribute name="choice" type="xs:string" />
+		<xs:attribute name="toUpper" type="xs:boolean" />
+		<xs:attribute name="toLower" type="xs:boolean" />
+	</xs:attributeGroup>
+
+	<xs:attributeGroup name="attr-parse">
+		<xs:attributeGroup ref="esi:attr-in-out" />
+		<xs:attribute name="type" type="esi:datatype" use="required" />
+		<xs:attribute name="parseFormat" type="xs:string" />
+		<xs:attribute name="emptyIsNull" type="xs:boolean" />
+		<xs:attribute name="ignoreEmpty" type="xs:boolean" />
+		<xs:attribute name="trim" type="xs:boolean" />
+	</xs:attributeGroup>
+
+	<xs:attributeGroup name="attr-output">
+		<xs:attributeGroup ref="esi:attr-in-out" />
+		<xs:attribute name="outputFormat" type="xs:string" />
+		<xs:attribute name="ignoreNull" type="xs:boolean" />
+	</xs:attributeGroup>
+	
+	<xs:attributeGroup name="attr-rule">
+		<xs:attribute name="is" type="xs:string" use="required" />
+		<xs:attribute name="to" type="xs:string" />
+		<xs:attribute name="type" type="esi:datatype" />
+		<xs:attribute name="format" type="xs:string" />
+	</xs:attributeGroup>
+	
+	<xs:complexType name="value">
+		<xs:sequence>
+			<xs:element name="item" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attributeGroup ref="esi:attr-parse" />
+	</xs:complexType>
+	
+	<xs:element name="value">
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="esi:value">
+					<xs:attribute name="name" type="xs:string" />
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="record">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="esi:value" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+		<xs:unique name="nameUnique">
+			<xs:selector xpath="value" />
+			<xs:field xpath="@name" />
+		</xs:unique>
+	</xs:element>
+	
+</xs:schema>

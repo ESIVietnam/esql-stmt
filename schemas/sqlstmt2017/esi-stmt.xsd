@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://esi.vn/2017/esi-stmt" 
+	xmlns:stmt="http://esi.vn/2017/esi-stmt"
+	xmlns:esi="http://esi.vn/2017/esi-base"
+	elementFormDefault="qualified">
+	<!--XML schema definition for ESI-DBTools SQLStmt and SQLStmtDict container -->
+
+	<xs:import namespace="http://esi.vn/2017/esi-base" schemaLocation="esi-base.xsd" />
+	
+	<xs:element name="SQLStmtDict">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="stmt:SQLStmt" minOccurs="1" maxOccurs="unbounded" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="SQLStmt">
+		<xs:complexType>
+			<xs:sequence>	
+				<xs:choice minOccurs="0" maxOccurs="unbounded">
+					<xs:element name="param" minOccurs="0" maxOccurs="unbounded">
+						<xs:complexType>
+							<xs:attributeGroup ref="esi:attr-type" />
+							<xs:attribute name="name" type="xs:string" use="required" />
+							<xs:attribute name="ifFlag" type="xs:string" />
+							<xs:attribute name="notFlag" type="xs:string" />
+							<xs:attribute name="noBind" type="xs:boolean" />
+							<xs:attribute name="bindNull" type="xs:boolean" />
+							<xs:attribute name="allowEmpty" type="xs:boolean" />
+							<xs:attribute name="bindList" type="xs:boolean" />
+							<xs:attribute name="paramMode" type="stmt:param-mode" />
+							<xs:attribute name="arrayType" type="xs:string" />
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="paramAlias">
+						<xs:complexType>
+							<xs:attribute name="of" type="xs:string" />
+						</xs:complexType>
+					</xs:element>
+				</xs:choice>
+				<xs:element name="flag" minOccurs="0" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:choice minOccurs="1">
+								<xs:element name="combo">
+									<xs:complexType>
+										<xs:sequence>
+											<xs:choice minOccurs="1" maxOccurs="unbounded">
+												<xs:element name="check" type="stmt:rule-check" />
+												<xs:element name="ifFlag" type="stmt:flag-check" />
+												<xs:element name="notFlag" type="stmt:flag-check" />
+											</xs:choice>
+										</xs:sequence>
+										<xs:attribute name="match" type="stmt:check-combo-match"
+											default="all" />
+									</xs:complexType>
+								</xs:element>
+								<xs:element name="check" type="stmt:rule-check" />
+							</xs:choice>
+						</xs:sequence>
+						<xs:attribute name="name" type="xs:string" use="required"/>
+					</xs:complexType>
+				</xs:element>
+				<xs:choice maxOccurs="1">
+					<xs:element name="select" type="xs:string" />
+					<xs:element name="update" type="xs:string" />
+					<xs:element name="insert" type="xs:string" />
+					<xs:element name="delete" type="xs:string" />
+					<xs:element name="call" type="xs:string" />
+					<xs:element name="exec" type="xs:string" />
+				</xs:choice>
+				
+				<xs:element name="append" minOccurs="0" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:simpleContent>
+							<xs:extension base="xs:string">
+								<xs:attribute name="ifFlag" type="xs:string" />
+								<xs:attribute name="notFlag" type="xs:string" />
+								<xs:attribute name="join" type="xs:string" />
+								<xs:attribute name="with" type="xs:string" />
+								<xs:attribute name="prefix" type="xs:string" />
+								<xs:attribute name="postfix" type="xs:string" />
+								<xs:attribute name="paging" type="xs:string" />
+							</xs:extension>
+						</xs:simpleContent>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			
+			<xs:attribute name="id" type="xs:ID" use="required" />
+			<xs:attribute name="description" type="xs:string" />
+			<xs:attribute name="addIdSign" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>add comment like /* SQLStmt=id */ before generated SQL statement, for tracking or debugging</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="result" type="stmt:result" />
+			<xs:attribute name="return" type="xs:string" />
+			<xs:attribute name="fetchSize" type="xs:int" />
+			<xs:attribute name="bulk" type="xs:boolean" />
+			<xs:attribute name="executeEach" type="xs:int" />
+			<xs:attribute name="autoCommit" type="xs:boolean" />
+			<xs:attribute name="bindAsName" type="xs:boolean" />
+			<xs:attribute name="paging" type="xs:boolean" />
+		</xs:complexType>
+		<xs:unique name="SQLParamName">
+			<xs:selector xpath="param" />
+			<xs:field xpath="@name" />
+		</xs:unique>
+		<xs:unique name="SQLFlagName">
+			<xs:selector xpath="flag" />
+			<xs:field xpath="@name" />
+		</xs:unique>
+	</xs:element>
+
+	<xs:simpleType name="param-mode">
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="in" />
+			<xs:enumeration value="out" />
+			<xs:enumeration value="inout" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="check-combo-match">
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="all" />
+			<xs:enumeration value="only-one" />
+			<xs:enumeration value="any" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:complexType name="rule-check">
+		<xs:attributeGroup ref="esi:attr-rule" />
+		<xs:attribute name="param" type="xs:string" use="required" />
+	</xs:complexType>
+	
+	<xs:complexType name="flag-check">
+		<xs:attribute name="name" type="xs:string" use="required" />
+	</xs:complexType>
+
+	<xs:simpleType name="result">
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="none" />
+			<xs:enumeration value="record-set" />
+			<xs:enumeration value="row-count" />
+			<xs:enumeration value="id" />
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>
