@@ -3,7 +3,7 @@
 Embedded SQL Statement (ESQL-Stmt for short) framework is designed to help developing applications in a philosophy of **Separation of concerns** in 3 items:
 
 1. Business Logic codes should be in separated code, and easy writing, easy testing by skilled SQL or DSL Developers with knowledge of the business requirement.
-2. A generic programming language (like Java) should be use as "glue code" or "transpiled code" without business logic. It should provide library of commands to parsing data, session adn thread management, internal and external interfacing, message queuing, security and access control, etc... only. It will be assembled with business code to provide APIs to solve the problem.
+2. A generic programming language (like Java) should be use as "glue code" or "transpiled code" without business logic. It should provide library of utilities to parsing data, session and thread management, internal/external interfacing, message queuing, security and access control, etc... anything except business logic. It will be assembled with business code to provide APIs to solve the problem.
 3. UI and other interface should be written in separated code (or by external tool) to inter-operate with backend to do business logic only via APIs. They should totally use "Mock APIs" in development phase.
 
 To archive the philosophy, we design the framework helping us to build an application by the way:
