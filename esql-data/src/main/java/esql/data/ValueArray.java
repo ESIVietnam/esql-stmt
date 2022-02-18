@@ -2,6 +2,7 @@ package esql.data;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -42,7 +43,7 @@ public abstract class ValueArray extends Value implements List<Value> {
      * @param data
      * @return
      */
-    public static ValueArray valueOf(String... data) { //build from array of string
+    public static ValueArray arrayOf(String... data) { //build from array of string
         if(data.length == 0)
             return ValueArrayNULLEmpty.buildEmptyArray(Types.TYPE_STRING);
         Value[] array = new Value[data.length];
@@ -51,15 +52,46 @@ public abstract class ValueArray extends Value implements List<Value> {
     }
 
     /**
+     * short hand to build array of temporal
+     *
+     * @param data
+     * @return
+     */
+    public static ValueArray arrayOf(Temporal... data) { //build from array of temporal
+        if(data.length == 0)
+            return ValueArrayNULLEmpty.buildEmptyArray(Types.TYPE_DATETIME);
+        Value[] array = new Value[data.length];
+        for(int i = 0; i< data.length; i++) {
+            array[i] = ValueDateTime.buildDateTime(data[i]);
+            if(!array[i].is(array[0].getType()))
+                throw new IllegalArgumentException("Non-uni type of data");
+        }
+        return new ValueArrayByArray(array[0].getType(), array);
+    }
+
+    /**
+     * short hand to build array of decimal
+     * @param data
+     * @return
+     */
+    public static ValueArray arrayOf(BigDecimal...data) { //build from array of long
+        if(data.length == 0)
+            return ValueArrayNULLEmpty.buildEmptyArray(Types.TYPE_DECIMAL);
+        Value[] array = new Value[data.length];
+        IntStream.range(0, data.length).forEach((i) -> array[i] = ValueNumber.buildNumber(Types.TYPE_DECIMAL, data[i]));
+        return new ValueArrayByArray(array[0].getType(), array);
+    }
+
+    /**
      * short hand to build array of long
      * @param data
      * @return
      */
-    public static ValueArray valueOf(long...data) { //build from array of long
+    public static ValueArray arrayOf(long...data) { //build from array of long
         if(data.length == 0)
             return ValueArrayNULLEmpty.buildEmptyArray(Types.TYPE_LONG);
         Value[] array = new Value[data.length];
-        IntStream.range(0, data.length).forEach((i) -> array[i] = Value.valueOf(data[i]));
+        IntStream.range(0, data.length).forEach((i) -> array[i] = ValueNumber.buildNumber(Types.TYPE_LONG, data[i]));
         return new ValueArrayByArray(array[0].getType(), array);
     }
 
@@ -68,11 +100,11 @@ public abstract class ValueArray extends Value implements List<Value> {
      * @param data
      * @return
      */
-    public static ValueArray valueOf(int...data) { //build from array of int
+    public static ValueArray arrayOf(int...data) { //build from array of int
         if(data.length == 0)
             return ValueArrayNULLEmpty.buildEmptyArray(Types.TYPE_INT);
         Value[] array = new Value[data.length];
-        IntStream.range(0, data.length).forEach((i) -> array[i] = Value.valueOf(data[i]));
+        IntStream.range(0, data.length).forEach((i) -> array[i] = ValueNumber.buildNumber(Types.TYPE_INT, data[i]));
         return new ValueArrayByArray(array[0].getType(), array);
     }
 
@@ -81,11 +113,11 @@ public abstract class ValueArray extends Value implements List<Value> {
      * @param data
      * @return
      */
-    public static ValueArray valueOf(boolean...data) { //build from array of int
+    public static ValueArray arrayOf(boolean...data) { //build from array of int
         if(data.length == 0)
             return ValueArrayNULLEmpty.buildEmptyArray(Types.TYPE_BOOLEAN);
         Value[] array = new Value[data.length];
-        IntStream.range(0, data.length).forEach((i) -> array[i] = Value.valueOf(data[i]));
+        IntStream.range(0, data.length).forEach((i) -> array[i] = ValueBoolean.buildBoolean(data[i]));
         return new ValueArrayByArray(array[0].getType(), array);
     }
 
@@ -173,7 +205,8 @@ public abstract class ValueArray extends Value implements List<Value> {
     public abstract Object[] toObjectArray();
 
     /**
-     * this method is for convert to List of primitive for some
+     * this method is for convert to List of primitive for some purpose
+     *
      * @return
      */
     public abstract List<Object> toObjectList();

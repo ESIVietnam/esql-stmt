@@ -76,6 +76,8 @@ public abstract class ValueNumber extends Value {
             { DOUBLE_ZERO, DOUBLE_ONE, DOUBLE_TWO, DOUBLE_TEN, }, //10
     };
 
+    private static boolean integerUsingPool = "true".equals(System.getenv("ESQL_INTEGER_USING_POOL"));
+
     private static final int typeToIndex(Types type) {
         int i = -1;
         switch (type) {
@@ -184,7 +186,8 @@ public abstract class ValueNumber extends Value {
                 return ValueBoolean.buildBoolean(num != 0);
             case TYPE_BYTE:
                 //using pool
-                return new ValueNumberObject(type, (byte)((int) num & 0xff));
+                if(integerUsingPool)
+                    return new ValueNumberObject(type, (byte)((int) num & 0xff));
             case TYPE_UBYTE:
             case TYPE_SHORT:
             case TYPE_USHORT:
@@ -219,8 +222,10 @@ public abstract class ValueNumber extends Value {
             case TYPE_BOOLEAN:
                 return ValueBoolean.buildBoolean(num != 0);
             case TYPE_BYTE:
-                //FIXME: using Integer pool is better memory?
-                //return new ValueNumberObject(type, (byte)(num & 0xff));
+                //using Integer pool is better memory?
+                //using pool
+                if(integerUsingPool)
+                    return new ValueNumberObject(type, (byte)(num & 0xff));
             case TYPE_UBYTE:
             case TYPE_SHORT:
             case TYPE_USHORT:

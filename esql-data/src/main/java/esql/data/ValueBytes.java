@@ -1,6 +1,8 @@
 package esql.data;
 
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.stream.IntStream;
 
 /**
  * The Bytes Value contains an array of byte, convertible/comparable to ValueArray(Types.TYPE_BYTE).
@@ -14,8 +16,8 @@ public class ValueBytes extends Value {
     private final byte[] data;
 
     static final ValueBytes buildBytes(byte... data) {
-        if(data == null)
-            ValueNULL.buildNULL(Types.TYPE_BYTES);
+        /*if(data == null)
+            ValueNULL.buildNULL(Types.TYPE_BYTES);*/
         if(data.length==0)
             return EMPTY_BINARY_STRING;
         //deep copy.
@@ -67,25 +69,25 @@ public class ValueBytes extends Value {
         if(o == null || o.isNull())
             return 1;
         if(o instanceof ValueBytes)
-            return Arrays.compare(data, ((ValueBytes) o).data);
+            return Arrays.compareUnsigned(data, ((ValueBytes) o).data);
         //compare array of bytes
         if (o instanceof ValueArray) {
-            if(!o.is(Types.TYPE_BYTE))
-                throw new IllegalArgumentException("not a byte array");
+            if(!o.is(Types.TYPE_BYTE)) //always less than
+                return -1;
             //as byte array
             for(int i = 0;i<Math.min(data.length, ((ValueArray) o).size());i++) {
-                int c = Byte.compare(data[i], ((ValueNumber) ((ValueArray) o).get(i)).byteValue());
+                int c = Byte.compareUnsigned(data[i], ((ValueNumber) ((ValueArray) o).get(i)).byteValue());
                 if(c != 0)
                     return c;
             }
             return data.length > ((ValueArray) o).size() ? 1 : data.length < ((ValueArray) o).size() ? -1 : 0;
         }
-        //compare hexa string
+        //compare hex string
         if (o instanceof ValueString)
             return Arrays.compare(data,
                     hexToBytes(o.stringValue()));
-        //compare ASCII or UTF-8
-        return Arrays.compare(data, o.stringValue().getBytes(ValueString.STRING_CONVERT_CHARSET));
+        //can not compare, always -1
+        return -1;
     }
 
     @Override
@@ -102,10 +104,11 @@ public class ValueBytes extends Value {
                 return false;
             if (((ValueArray) obj).size() != data.length)
                 return false;
-            for(int i=0; i<data.length;i++)
-                if(!((ValueArray) obj).get(i).equals(data[i]))
-                    return false;
-            return true;
+            Iterator<Value> oit = ((ValueArray) obj).iterator();
+            int not_match = IntStream.range(0, Math.min(data.length,((ValueArray) obj).size()))
+                    .filter(i -> oit.hasNext() ? !oit.next().equals(data[i]) : true )
+                    .findFirst().orElse(-1);
+            return not_match < 0 && data.length == ((ValueArray) obj).size();
         }
         //compare hexa string
         if (obj instanceof ValueString)
@@ -113,19 +116,16 @@ public class ValueBytes extends Value {
                     || (!((ValueString) obj).isEmpty() && !this.isEmpty()
                         && Arrays.equals(data,
                     hexToBytes(((ValueString) obj).stringValue())));
-        if (obj instanceof Value) //other, convert to normal string then to bytes
-            return (!((Value) obj).isArray() && ((Value) obj).isEmpty() && this.isEmpty())
-                    || (!((ValueString) obj).isEmpty() && !this.isEmpty()
-                        && Arrays.equals(data,
-                            ((Value) obj).stringValue().getBytes(ValueString.STRING_CONVERT_CHARSET)));
+        if (obj instanceof Value) //other, false
+            return false;
         //compare primitive
         if (obj instanceof byte[])
             return Arrays.equals(data, (byte[])obj);
-        if (obj instanceof String)
+        if (obj instanceof String) //hex string, too
             return !((String) obj).isEmpty() && Arrays.equals(data,
                     hexToBytes(((String) obj)));
-        //other equal checking as hex string to byte array
-        return Arrays.equals(data, obj.toString().getBytes(ValueString.STRING_CONVERT_CHARSET));
+        //other false
+        return false;
     }
 
     /**
@@ -136,6 +136,12 @@ public class ValueBytes extends Value {
         if(isEmpty()) //empty array
             return EMPTY_BYTES;
         return Arrays.copyOf(data, data.length);
+    }
+
+    byte[] backedBytesArray() {
+        if(isEmpty()) //empty array
+            return EMPTY_BYTES;
+        return data;
     }
 
     /**

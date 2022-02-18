@@ -23,6 +23,20 @@ public abstract class ValueDateTime  extends Value {
         return type;
     }
 
+    static Value buildDateTime(Temporal val) {
+        if(val instanceof Instant)
+            return buildDateTime((Instant) val);
+        if(val instanceof ZonedDateTime)
+            return buildDateTime((ZonedDateTime) val);
+        if(val instanceof LocalDateTime)
+            return buildDateTime((LocalDateTime) val);
+        if(val instanceof LocalDate)
+            return buildDateTime((LocalDate) val);
+        if(val instanceof LocalTime)
+            return buildDateTime((LocalTime) val);
+        throw new IllegalArgumentException("Unsupported");
+    }
+
     static Value buildDateTime(Date val) {
         return new ValueLocalDate(val.toLocalDate());
     }
