@@ -294,5 +294,4 @@ public static Value buildValue(ResultSet rs, int coltype, int column) throws ESI
         return getType()+":"+stringValue();
     }
 
-
 }

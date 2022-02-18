@@ -55,7 +55,7 @@ public class ConvertValueToObject implements Function<Value, Object> {
             case TYPE_BLOB:
                 break;
             case TYPE_BYTES:
-                return ((ValueBytes)value).binaryValue(); //real object
+                return ((ValueBytes)value).bytesArray(); //real object
         }
         throw new UnsupportedOperationException("Type \""+value.getType()+"\" can not be converted to Java Object.");
     }

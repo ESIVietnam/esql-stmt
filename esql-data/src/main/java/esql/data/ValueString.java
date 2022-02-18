@@ -1,7 +1,14 @@
 package esql.data;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+
 public class ValueString extends Value {
 
+    public static final Charset STRING_CONVERT_CHARSET =
+            Charset.forName(Optional.ofNullable(System.getenv("ESQL_DEFAULT_STRING_CHARSET"))
+                    .orElse(StandardCharsets.UTF_8.name()));
     private static final ValueString EMPTY_STRING = new ValueString(false, "");
     private static final ValueString EMPTY_NSTRING = new ValueString(true, "");
 
