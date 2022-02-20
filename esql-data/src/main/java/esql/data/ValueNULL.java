@@ -6,10 +6,6 @@ public class ValueNULL extends Value {
 
     public static final ValueNULL NULL_STRING = new ValueNULL(Types.TYPE_STRING);
     public static final ValueNULL NULL_NSTRING = new ValueNULL(Types.TYPE_NSTRING);
-    public static final ValueNULL NULL_CLOB = new ValueNULL(Types.TYPE_CLOB);
-    public static final ValueNULL NULL_NCLOB = new ValueNULL(Types.TYPE_NCLOB);
-    public static final ValueNULL NULL_BLOB = new ValueNULL(Types.TYPE_BLOB);
-    public static final ValueNULL NULL_BYTES = new ValueNULL(Types.TYPE_BYTES);
 
     public static final ValueNULL NULL_DATA_TREE = new ValueNULL(Types.TYPE_DATA_TREE);
     public static final ValueNULL NULL_XML = new ValueNULL(Types.TYPE_XML);
@@ -47,13 +43,13 @@ public class ValueNULL extends Value {
             case TYPE_NSTRING:
                 return NULL_NSTRING;
             case TYPE_CLOB:
-                return NULL_CLOB;
+                return ValueLOB.NULL_CLOB;
             case TYPE_NCLOB:
-                return NULL_NCLOB;
+                return ValueLOB.NULL_NCLOB;
             case TYPE_BLOB:
-                return NULL_BLOB;
+                return ValueLOB.NULL_BLOB;
             case TYPE_BYTES:
-                return NULL_BYTES;
+                return ValueBytes.NULL_BYTES;
 
             case TYPE_DATA_TREE:
                 return NULL_DATA_TREE;

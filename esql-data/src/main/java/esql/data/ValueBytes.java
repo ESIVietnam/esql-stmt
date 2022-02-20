@@ -11,7 +11,8 @@ import java.util.stream.IntStream;
 public class ValueBytes extends Value {
 
     private final static byte[] EMPTY_BYTES = new byte[0];
-    public static final ValueBytes EMPTY_BINARY_STRING = new ValueBytes(EMPTY_BYTES);
+    static final ValueBytes EMPTY_BINARY_STRING = new ValueBytes(EMPTY_BYTES);
+    static final ValueBytes NULL_BYTES = new ValueBytes(null);
 
     private final byte[] data;
 
@@ -26,7 +27,7 @@ public class ValueBytes extends Value {
 
     static final ValueBytes buildBytes(String hex_data) {
         if(hex_data == null)
-            ValueNULL.buildNULL(Types.TYPE_BYTES);
+            return NULL_BYTES;
         if(hex_data.isEmpty())
             return EMPTY_BINARY_STRING;
         //hex string to bytes
