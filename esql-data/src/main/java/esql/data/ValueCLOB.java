@@ -44,11 +44,46 @@ public class ValueCLOB extends ValueLOB {
         return new ValueCLOB(null, data.toCharArray(), data.length(), national, hash_holder);
     }
 
+    /**
+     * wrapping a reader as CLOB, read/hash calculate on-demand.
+     * 
+     * @param lobSourceReader
+     * @param lobSize
+     * @param national
+     * @param hashAlgorithms
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
     public static ValueCLOB wrap(Reader lobSourceReader, long lobSize, boolean national, int... hashAlgorithms) throws NoSuchAlgorithmException {
         if (lobSize == 0) //nothing to read
             return national ?  ValueCLOB.EMPTY_NCLOB : ValueCLOB.EMPTY_CLOB;
         //tempFile trong truong hop nay thi khong create, ma dung UUID
         return new ValueCLOB.ValueCLOBonDemand(lobSourceReader, ValueLOB.tempDir.resolve("ESQL-CLOB"+ UUID.randomUUID()+".txt"), lobSize, national, hashAlgorithms);
+    }
+
+    /**
+     * create a new CLOB from reader.
+     *
+     * @param lobSourceReader
+     * @param national
+     * @param hashAlgorithms
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws IOException
+     */
+    public static ValueCLOB load(Reader lobSourceReader, boolean national, int... hashAlgorithms) throws NoSuchAlgorithmException, IOException {
+        if(hashAlgorithms.length == 0)
+            hashAlgorithms = DEFAULT_HASH_ALGOS;
+
+        try(ValueCLOBCreator creator = ValueLOB.getCLOBCreator(national,
+                hashAlgorithms)) {
+
+            CharBuffer buff = CharBuffer.allocate(1024);
+            while (0 <= lobSourceReader.read(buff)) {
+                creator.writeToLOB(buff);
+            }
+            return creator.buildCLOB();
+        }
     }
 
     static ValueCLOB buildCLOB(Path tempFile, char[] first_in_mem, long stringLen, boolean national, byte[]... preHash) {
