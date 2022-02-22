@@ -32,6 +32,7 @@ public class ValueString extends Value {
     public boolean isTrue() {
         return !this.value.isEmpty();
     }
+    
 
     @Override
     public Value convertTo(Types type) {

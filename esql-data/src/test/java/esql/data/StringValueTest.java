@@ -27,23 +27,25 @@ public class StringValueTest {
     public void EmptyStringTest() {
     	
         Value stringEmpty;
-      
+        Value nstringEmpty = new ValueString(true, "");
         
         stringEmpty = Value.valueOf("");
        
 
-
+        
         assertTrue(stringEmpty.is(TYPE_STRING), "Not correct type");
         assertTrue(!stringEmpty.isNull(), "Must be not null");
         assertTrue(!stringEmpty.isTrue(), "Must not true");
         assertTrue(stringEmpty.isEmpty(), "Must be empty");
         assertEquals(stringEmpty.getType(), TYPE_STRING);
+        
+        
 
-//        assertTrue(nstringEmpty.is(TYPE_NSTRING), "Not correct type");
-//        assertTrue(!nstringEmpty.isNull(), "Must be not null");
-//        assertTrue(!nstringEmpty.isTrue(), "Must not true");
-//        assertTrue(nstringEmpty.isEmpty(), "Must be empty");
-//        assertEquals(nstringEmpty.getType(), TYPE_NSTRING);
+        assertTrue(nstringEmpty.is(TYPE_NSTRING), "Not correct type");
+        assertTrue(!nstringEmpty.isNull(), "Must be not null");
+        assertTrue(!nstringEmpty.isTrue(), "Must not true");
+        assertTrue(nstringEmpty.isEmpty(), "Must be empty");
+        assertEquals(nstringEmpty.getType(), TYPE_NSTRING);
         
     }
     
