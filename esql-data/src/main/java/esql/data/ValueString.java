@@ -6,9 +6,16 @@ import java.util.Optional;
 
 public class ValueString extends Value {
 
-    public static final Charset STRING_CONVERT_CHARSET =
-            Charset.forName(Optional.ofNullable(System.getenv("ESQL_DEFAULT_STRING_CHARSET"))
+    public static final ValueString NULL_STRING = new ValueString(false, null);
+    public static final ValueString NULL_NSTRING = new ValueString(true, null);
+
+    private static final Charset STRING_DEFAULT_CHARSET =
+            Charset.forName(Optional.ofNullable(System.getenv("ESQL_STRING_DEFAULT_CHARSET"))
                     .orElse(StandardCharsets.UTF_8.name()));
+    private static final Charset STRING_NATIONAL_CHARSET =
+            Charset.forName(Optional.ofNullable(System.getenv("ESQL_STRING_NATIONAL_CHARSET"))
+                    .orElse(StandardCharsets.UTF_8.name()));
+
     private static final ValueString EMPTY_STRING = new ValueString(false, "");
     private static final ValueString EMPTY_NSTRING = new ValueString(true, "");
 
@@ -24,10 +31,14 @@ public class ValueString extends Value {
         if(!Types.isString(type))
             throw new IllegalArgumentException("not for type other than string/nstring");
         if(val == null)
-            return ValueNULL.buildNULL(type);
+            return Value.nullOf(type);
         if(val.isEmpty())
             return Types.TYPE_NSTRING.equals(type) ? EMPTY_NSTRING:EMPTY_STRING;
         return new ValueString(false, val);
+    }
+
+    public static final Charset stringCharset(boolean national) {
+        return national ? STRING_DEFAULT_CHARSET : STRING_NATIONAL_CHARSET;
     }
 
     @Override
@@ -59,7 +70,9 @@ public class ValueString extends Value {
     @Override
     public int compareTo(Value o) {
         if(o == null || o.isNull())
-            return 1;
+            return this.value == null ? 0 : 1;
+        if(this.value == null)
+            return -1;
         return this.value.compareTo(o.stringValue());
     }
 
@@ -78,6 +91,8 @@ public class ValueString extends Value {
 
     @Override
     public String stringValue() {
+        if(value == null)
+            return Value.STRING_OF_NULL;
         return value;
     }
 }

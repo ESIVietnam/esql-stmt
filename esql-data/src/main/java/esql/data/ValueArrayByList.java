@@ -49,7 +49,7 @@ public class ValueArrayByList extends ValueArray {
     @Override
     public boolean add(Value value) {
         if(value == null)
-            value = ValueNULL.buildNULL(getType());
+            value = Value.nullOf(getType());
         if(!is(value.getType()))
             throw new IllegalArgumentException("Array of \""+getType()+"\" does not allow add other type of \""
                     +value.getType()+"\"");
@@ -113,7 +113,7 @@ public class ValueArrayByList extends ValueArray {
     @Override
     public Value set(int index, Value value) {
         if(value == null)
-            value = ValueNULL.buildNULL(getType());
+            value = Value.nullOf(getType());
         if(!is(value.getType()))
             throw new IllegalArgumentException("Array of \""+getType()+"\" does not allow add other type of \""
                     +value.getType()+"\"");
@@ -123,7 +123,7 @@ public class ValueArrayByList extends ValueArray {
     @Override
     public void add(int index, Value value) {
         if(value == null)
-            value = ValueNULL.buildNULL(getType());
+            value = Value.nullOf(getType());
         if(!is(value.getType()))
             throw new IllegalArgumentException("Array of \""+getType()+"\" does not allow add other type of \""
                     +value.getType()+"\"");

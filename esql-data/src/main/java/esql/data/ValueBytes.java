@@ -39,8 +39,13 @@ public class ValueBytes extends Value {
     }
 
     @Override
+    public boolean isNull() {
+        return data == null;
+    }
+
+    @Override
     public boolean isEmpty() {
-        return data.length == 0;
+        return isNull() || data.length == 0;
     }
 
     @Override
@@ -50,6 +55,8 @@ public class ValueBytes extends Value {
 
     @Override
     public Value convertTo(Types type) {
+        if(this.isNull())
+            return Value.nullOf(type);
         return null;
     }
 
@@ -130,6 +137,17 @@ public class ValueBytes extends Value {
     }
 
     /**
+     * return length of byte array
+     *
+     * @return
+     */
+    public int length() {
+        if(isNull())
+            return 0;
+        return data.length;
+    }
+
+    /**
      * Get deep copied of binary value;
      * @return byte array
      */
@@ -150,7 +168,9 @@ public class ValueBytes extends Value {
      * @return
      */
     public ValueArray bytesValueArray() {
-        if(data == null || data.length == 0)
+        if(isNull())
+            return ValueArrayNULLEmpty.buildNullArray(Types.TYPE_BYTE);
+        if(isEmpty())
             return ValueArrayNULLEmpty.buildEmptyArray(Types.TYPE_BYTE);
         Value[] a = new Value[data.length];
         for(int i=0;i<a.length;i++)

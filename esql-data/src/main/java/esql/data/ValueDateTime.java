@@ -11,6 +11,10 @@ import java.time.temporal.Temporal;
 public abstract class ValueDateTime  extends Value {
 
     public static final long MILLISECONDS_PER_DAY = 86400*1000;
+    public static final ValueDateTime NULL_DATE = new ValueNULLDateTime(Types.TYPE_DATE);
+    public static final ValueDateTime NULL_TIME = new ValueNULLDateTime(Types.TYPE_TIME);
+    public static final ValueDateTime NULL_DATETIME = new ValueNULLDateTime(Types.TYPE_DATETIME);
+    public static final ValueDateTime NULL_TIMESTAMP = new ValueNULLDateTime(Types.TYPE_TIMESTAMP);
 
     private final Types type; //for Date, DateTime, Time (non-instant) or Timestamp (instant value)
 
@@ -98,6 +102,59 @@ public abstract class ValueDateTime  extends Value {
             return !((Value) obj).isNull() && this.toTemporal().equals(((Value) obj).stringValue());
         //compare primitive
         return this.toTemporal().equals(obj);
+    }
+}
+
+final class ValueNULLDateTime extends ValueDateTime {
+
+    ValueNULLDateTime(Types type) {
+        super(type);
+    }
+
+    @Override
+    public boolean isTrue() {
+        return false;
+    }
+
+    @Override
+    public Temporal toTemporal() {
+        return null;
+    }
+
+    @Override
+    public Value convertTo(Types type) {
+        return Value.nullOf(type);
+    }
+
+    @Override
+    public boolean isNull() {
+        return true;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return true;
+    }
+
+    @Override
+    public String stringValue() {
+        return Value.STRING_OF_NULL;
+    }
+
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == this)
+            return true;
+        return false;
+    }
+
+    @Override
+    public int compareTo(Value o) {
+        if(o != null && o.isNull())
+            return 0;
+        return -1;
     }
 }
 

@@ -21,11 +21,11 @@ public abstract class ValueArray extends Value implements List<Value> {
      *
      * @return new ValueArray
      */
-    public static ValueArray newInstance(Types type) {
+    public static ValueArray builderOf(Types type) {
         return new ValueArrayByList(type, new ArrayList<>());
     }
 
-    public static ValueArray newInstance(Types type, int capacity) {
+    public static ValueArray builderOf(Types type, int capacity) {
         return new ValueArrayByList(type, new ArrayList<>(capacity));
     }
 

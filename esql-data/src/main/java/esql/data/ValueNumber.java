@@ -5,12 +5,23 @@ import java.math.BigInteger;
 import java.util.regex.Pattern;
 
 public abstract class ValueNumber extends Value {
-    
     /*
      * This patterns for checking correct format
      */
     final static Pattern INTEGER_PATTERN = Pattern.compile("^\\s*[+-]?\\s*\\d+\\s*$");
     final static Pattern DECIMAL_PATTERN = Pattern.compile("^\\s*([+-]?\\s*\\d+)?\\.\\d+\\s*$");
+
+    public static final ValueNumber NULL_BYTE = new ValueNULLNumber(Types.TYPE_BYTE);
+    public static final ValueNumber NULL_SHORT = new ValueNULLNumber(Types.TYPE_SHORT);
+    public static final ValueNumber NULL_INT = new ValueNULLNumber(Types.TYPE_INT);
+    public static final ValueNumber NULL_LONG = new ValueNULLNumber(Types.TYPE_LONG);
+    public static final ValueNumber NULL_UBYTE = new ValueNULLNumber(Types.TYPE_UBYTE);
+    public static final ValueNumber NULL_USHORT = new ValueNULLNumber(Types.TYPE_USHORT);
+    public static final ValueNumber NULL_UINT = new ValueNULLNumber(Types.TYPE_UINT);
+    public static final ValueNumber NULL_ULONG = new ValueNULLNumber(Types.TYPE_ULONG);
+    public static final ValueNumber NULL_DECIMAL = new ValueNULLNumber(Types.TYPE_DECIMAL);
+    public static final ValueNumber NULL_FLOAT = new ValueNULLNumber(Types.TYPE_FLOAT);
+    public static final ValueNumber NULL_DOUBLE = new ValueNULLNumber(Types.TYPE_DOUBLE);
 
     public final static ValueNumberInt BYTE_ZERO = new ValueNumberInt(Types.TYPE_BYTE, 0);
     public final static ValueNumberInt BYTE_ONE = new ValueNumberInt(Types.TYPE_BYTE, 1);
@@ -251,7 +262,7 @@ public abstract class ValueNumber extends Value {
 
     static Value buildNumber(Types type, BigDecimal num) {
         if(num==null)
-            return ValueNULL.buildNULL(type);
+            return Value.nullOf(type);
         ValueNumber v = useStaticValue(type, num);
         if(v != null)
             return v;
@@ -271,7 +282,7 @@ public abstract class ValueNumber extends Value {
 
     static Value buildNumber(Types type, BigInteger num) {
         if(num==null)
-            return ValueNULL.buildNULL(type);
+            return Value.nullOf(type);
         ValueNumber v = useStaticValue(type, num);
         if(v != null)
             return v;
@@ -313,6 +324,102 @@ public abstract class ValueNumber extends Value {
     }
 }
 
+final class ValueNULLNumber extends ValueNumber {
+    private final Types type;
+
+    ValueNULLNumber(Types type) {
+        this.type = type;
+    }
+
+    @Override
+    public boolean isTrue() {
+        return false;
+    }
+
+    @Override
+    public Value convertTo(Types type) {
+        return Value.nullOf(type);
+    }
+
+    @Override
+    public Types getType() {
+        return type;
+    }
+
+    @Override
+    public boolean isNull() {
+        return true;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return true;
+    }
+
+    @Override
+    public String stringValue() {
+        return Value.STRING_OF_NULL;
+    }
+
+    @Override
+    public boolean booleanValue() {
+        return false;
+    }
+
+    @Override
+    public byte byteValue() {
+        return 0;
+    }
+
+    @Override
+    public short shortValue() {
+        return 0;
+    }
+
+    @Override
+    public int intValue() {
+        return 0;
+    }
+
+    @Override
+    public long longValue() {
+        return 0;
+    }
+
+    @Override
+    public float floatValue() {
+        return 0;
+    }
+
+    @Override
+    public double doubleValue() {
+        return 0;
+    }
+
+    @Override
+    public BigDecimal decimalValue() {
+        return null;
+    }
+
+    @Override
+    public BigInteger bigIntValue() {
+        return null;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == this)
+            return true;
+        return false;
+    }
+
+    @Override
+    public int compareTo(Value o) {
+        if(o != null && o.isNull())
+            return 0;
+        return -1;
+    }
+}
 /**
  * class for BigInteger  (ulong), BigDecimal, Float, Double,
  * or, for Integer from -128 to 127 due to Java's pool of Integer to save memory.
@@ -541,7 +648,7 @@ final class ValueNumberObject extends ValueNumber {
                 return ValueBoolean.buildBoolean(this.isTrue());
             else
                 return ValueBoolean.BOOL_TRUE;
-        return ValueNULL.buildNULL(toType);//can not cast, set null.
+        return Value.nullOf(toType);//can not cast, set null.
     }
 }
 
@@ -569,7 +676,7 @@ class ValueNumberLong extends ValueNumber {
                 return ValueBoolean.buildBoolean(this.isTrue());
             else
                 return ValueBoolean.BOOL_TRUE;
-        return ValueNULL.buildNULL(type);//can not cast, set null.
+        return Value.nullOf(type);//can not cast, set null.
     }
 
     @Override
@@ -714,7 +821,7 @@ final class ValueNumberInt extends ValueNumber {
                 return ValueBoolean.buildBoolean(this.isTrue());
             else
                 return ValueBoolean.BOOL_TRUE;
-        return ValueNULL.buildNULL(type);//can not cast, set null.
+        return Value.nullOf(type);//can not cast, set null.
     }
 
     @Override

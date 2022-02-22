@@ -10,6 +10,11 @@ import java.time.*;
  */
 public abstract class Value implements Serializable, Comparable<Value> {
 
+    public static final String STRING_OF_NULL = "";
+    public static final ValueNULL NULL_DATA_TREE = new ValueNULL(Types.TYPE_DATA_TREE);
+    public static final ValueNULL NULL_XML = new ValueNULL(Types.TYPE_XML);
+    public static final ValueNULL NULL_JSON = new ValueNULL(Types.TYPE_JSON);
+
     /**
      * The value is empty as definition.
      * NULL treats as empty value.
@@ -89,6 +94,67 @@ public static Value buildValue(ResultSet rs, int coltype, int column) throws ESI
 }
  */
 
+    public static Value nullOf(Types type) {
+        switch(type) {
+            case TYPE_STRING:
+                return ValueString.NULL_STRING;
+            case TYPE_NSTRING:
+                return ValueString.NULL_NSTRING;
+            case TYPE_CLOB:
+                return ValueCLOB.NULL_CLOB;
+            case TYPE_NCLOB:
+                return ValueCLOB.NULL_NCLOB;
+            case TYPE_BLOB:
+                return ValueBLOB.NULL_BLOB;
+            case TYPE_BYTES:
+                return ValueBytes.NULL_BYTES;
+
+            case TYPE_DATA_TREE:
+                return NULL_DATA_TREE;
+            case TYPE_XML:
+                return NULL_XML;
+            case TYPE_JSON:
+                return NULL_JSON;
+
+            case TYPE_BYTE:
+                return ValueNumber.NULL_BYTE;
+            case TYPE_SHORT:
+                return ValueNumber.NULL_SHORT;
+            case TYPE_INT:
+                return ValueNumber.NULL_INT;
+            case TYPE_LONG:
+                return ValueNumber.NULL_LONG;
+            case TYPE_UBYTE:
+                return ValueNumber.NULL_UBYTE;
+            case TYPE_USHORT:
+                return ValueNumber.NULL_USHORT;
+            case TYPE_UINT:
+                return ValueNumber.NULL_UINT;
+            case TYPE_ULONG:
+                return ValueNumber.NULL_ULONG;
+
+            case TYPE_DECIMAL:
+                return ValueNumber.NULL_DECIMAL;
+
+            case TYPE_FLOAT:
+                return ValueNumber.NULL_FLOAT;
+            case TYPE_DOUBLE:
+                return ValueNumber.NULL_DOUBLE;
+
+            case TYPE_DATE:
+                return ValueDateTime.NULL_DATE;
+            case TYPE_TIME:
+                return ValueDateTime.NULL_TIME;
+            case TYPE_DATETIME:
+                return ValueDateTime.NULL_DATETIME;
+            case TYPE_TIMESTAMP:
+                return ValueDateTime.NULL_TIMESTAMP;
+            case TYPE_BOOLEAN:
+                return ValueBoolean.NULL_BOOLEAN;
+        }
+        return null;
+    }
+
     /*
      * Factory methods does not parse any data
      * String is using string build
@@ -131,101 +197,101 @@ public static Value buildValue(ResultSet rs, int coltype, int column) throws ESI
 
     public final static Value valueOf(Boolean val) {
         if(val==null)
-            ValueNULL.buildNULL(Types.TYPE_BOOLEAN);
+            nullOf(Types.TYPE_BOOLEAN);
         return ValueBoolean.buildBoolean(val);
     }
 
     public final static Value valueOf(Byte val) {
         if(val==null)
-            ValueNULL.buildNULL(Types.TYPE_BYTE);
+            nullOf(Types.TYPE_BYTE);
         return ValueNumber.buildNumber(Types.TYPE_BYTE, val.longValue());
     }
 
     public final static Value valueOf(Short val) {
         if(val==null)
-            ValueNULL.buildNULL(Types.TYPE_SHORT);
+            nullOf(Types.TYPE_SHORT);
         return ValueNumber.buildNumber(Types.TYPE_SHORT, val.longValue());
     }
 
     public final static Value valueOf(Integer val) {
         if(val==null)
-            ValueNULL.buildNULL(Types.TYPE_INT);
+            nullOf(Types.TYPE_INT);
         return ValueNumber.buildNumber(Types.TYPE_INT, val.longValue());
     }
     public final static Value valueOf(Long val) {
         if(val==null)
-            ValueNULL.buildNULL(Types.TYPE_LONG);
+            nullOf(Types.TYPE_LONG);
         return ValueNumber.buildNumber(Types.TYPE_LONG, val.longValue());
     }
 
     public final static Value valueOf(Float val) {
         if(val==null)
-            ValueNULL.buildNULL(Types.TYPE_FLOAT);
+            nullOf(Types.TYPE_FLOAT);
         return ValueNumber.buildNumber(Types.TYPE_FLOAT, val);
     }
     public final static Value valueOf(Double val) {
         if(val==null)
-            ValueNULL.buildNULL(Types.TYPE_DOUBLE);
+            nullOf(Types.TYPE_DOUBLE);
         return ValueNumber.buildNumber(Types.TYPE_DOUBLE, val);
     }
 
     public final static Value valueOf(BigDecimal num) {
         if(num==null)
-            ValueNULL.buildNULL(Types.TYPE_DECIMAL);
+            nullOf(Types.TYPE_DECIMAL);
         return ValueNumber.buildNumber(Types.TYPE_DECIMAL, num);
     }
 
     public final static Value valueOf(BigInteger val) {
         if(val==null)
-            ValueNULL.buildNULL(Types.TYPE_ULONG);
+            nullOf(Types.TYPE_ULONG);
         return ValueNumber.buildNumber(Types.TYPE_ULONG, val);
     }
 
     public final static Value valueOf(java.sql.Date val) {
         if(val==null)
-            ValueNULL.buildNULL(Types.TYPE_DATE);
+            nullOf(Types.TYPE_DATE);
         return ValueDateTime.buildDateTime(val);
     }
 
     public final static Value valueOf(java.sql.Time val) {
         if(val==null)
-            ValueNULL.buildNULL(Types.TYPE_TIME);
+            nullOf(Types.TYPE_TIME);
         return ValueDateTime.buildDateTime(val);
     }
 
     public static Value valueOf(java.sql.Timestamp val) {
         if(val==null)
-            ValueNULL.buildNULL(Types.TYPE_TIMESTAMP);
+            nullOf(Types.TYPE_TIMESTAMP);
         return ValueDateTime.buildDateTime(val);
     }
 
     public static Value valueOf(LocalDate val) {
         if(val==null)
-            ValueNULL.buildNULL(Types.TYPE_DATE);
+            nullOf(Types.TYPE_DATE);
         return ValueDateTime.buildDateTime(val);
     }
 
     public static Value valueOf(LocalTime val) {
         if(val==null)
-            ValueNULL.buildNULL(Types.TYPE_TIME);
+            nullOf(Types.TYPE_TIME);
         return ValueDateTime.buildDateTime(val);
     }
 
     public static Value valueOf(LocalDateTime val) {
         if(val==null)
-            ValueNULL.buildNULL(Types.TYPE_DATETIME);
+            nullOf(Types.TYPE_DATETIME);
         return ValueDateTime.buildDateTime(val);
     }
 
     public static Value valueOf(ZonedDateTime val) {
         if(val==null)
-            ValueNULL.buildNULL(Types.TYPE_TIMESTAMP);
+            nullOf(Types.TYPE_TIMESTAMP);
         return ValueDateTime.buildDateTime(val);
     }
 
     public static Value valueOf(Instant val) {
         if(val==null)
-            ValueNULL.buildNULL(Types.TYPE_TIMESTAMP);
+            nullOf(Types.TYPE_TIMESTAMP);
         return ValueDateTime.buildDateTime(val);
     }
 

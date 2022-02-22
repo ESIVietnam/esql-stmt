@@ -16,7 +16,7 @@ public class ConvertObjectToValue implements Function<Object, Value> {
     @Override
     public Value apply(Object o) {
         if(o == null) //the NullValue as null.
-            return ValueNULL.buildNULL(type);
+            return Value.nullOf(type);
         Value value;
         //date, time stuffs
         if(o instanceof java.sql.Date)

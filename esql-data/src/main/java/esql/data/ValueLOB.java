@@ -5,10 +5,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public abstract class ValueLOB extends Value implements Closeable {
     public static final int MD5 = 0;
@@ -19,6 +20,9 @@ public abstract class ValueLOB extends Value implements Closeable {
     static final String[] HASHES = {
             "MD5", "SHA-1","SHA-256", "SHA-384", "SHA-512"
     };
+
+    public static final int DEFAULT_HASH_ALGO = MD5;
+    public static final int[] DEFAULT_HASH_ALGOS = { MD5 };
 
     public static final int MAX_BUFFERED_SIZE =
            Integer.parseInt(Optional.ofNullable( System.getenv("ESQL_LOB_BUFFER_SIZE"))
@@ -39,15 +43,10 @@ public abstract class ValueLOB extends Value implements Closeable {
     };
 
     static final byte[] EMPTY_BYTES = new byte[0];
-    static final ValueBLOB NULL_BLOB = new ValueBLOB(null, 0L);
-    static final ValueBLOB EMPTY_BLOB = new ValueBLOB(EMPTY_BYTES, 0L, EMPTY_HASHES[MD5], EMPTY_HASHES[SHA1], EMPTY_HASHES[SHA256], EMPTY_HASHES[SHA384], EMPTY_HASHES[SHA512]);
-
     static final char[] EMPTY_CHARS = new char[0];
-    static final ValueCLOB NULL_CLOB = new ValueCLOB(null, null, 0L, 0L, false, null, null, null);
-    static final ValueCLOB NULL_NCLOB = new ValueCLOB(null, null, 0L, 0L, true, null, null, null);
-    static final ValueCLOB EMPTY_CLOB = new ValueCLOB(null, EMPTY_CHARS, 0L, 0L, false, EMPTY_HASHES[MD5], EMPTY_HASHES[SHA1], EMPTY_HASHES[SHA256], EMPTY_HASHES[SHA384], EMPTY_HASHES[SHA512]);
-    static final ValueCLOB EMPTY_NCLOB = new ValueCLOB(null, EMPTY_CHARS, 0L, 0L, true, EMPTY_HASHES[MD5], EMPTY_HASHES[SHA1], EMPTY_HASHES[SHA256], EMPTY_HASHES[SHA384], EMPTY_HASHES[SHA512]);
 
+    //LOB Size for BLOB is byte counting.
+    //LOB Size for CLOB is character counting.
     protected final long lobSize;
     final byte[][] preHash;
 
@@ -56,13 +55,102 @@ public abstract class ValueLOB extends Value implements Closeable {
         this.preHash = pre_hash;
     }
 
+    /**
+     * create BLOBCreator (or builder) that to writing data for the new BLOB.
+     *
+     * @param hashAlgorithms
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
     public static ValueBLOBCreator getBLOBCreator(int... hashAlgorithms) throws NoSuchAlgorithmException {
-        return new ValueBLOBCreator(hashAlgorithms);
+        return new ValueBLOBCreator(hashAlgorithms.length == 0 ? DEFAULT_HASH_ALGOS: hashAlgorithms);
+    }
+
+    /**
+     *
+     * create a CLOBCreator with national char (to build NCLOB).
+     *
+     * @param national true to create NCLOB, otherwise CLOB
+     * @param hashAlgorithms hash to digest
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    public static ValueCLOBCreator getCLOBCreator(boolean national, int... hashAlgorithms) throws NoSuchAlgorithmException {
+        return new ValueCLOBCreator(national, hashAlgorithms.length == 0 ? DEFAULT_HASH_ALGOS: hashAlgorithms);
+    }
+
+    /**
+     * get a convenience hash (inherit or default)
+     *
+     * @return hashAlgos.
+     */
+
+    protected int[] findConvenienceAlgorithms() {
+        var used = IntStream.range(0, HASHES.length)
+                .filter(t -> preHash[t] != null).toArray();
+        if(used.length == 0)
+            return DEFAULT_HASH_ALGOS;
+        return used;
     }
 
     @Override
     public boolean isEmpty() {
         return isNull() || this.lobSize == 0;
+    }
+
+    @Override
+    public int compareTo(Value o) {
+        if(o == this)
+            return 0;
+        //only compare LOBs
+        if(o instanceof ValueLOB) {
+            int c = Long.compareUnsigned(this.size(), ((ValueLOB) o).size());
+            if(c != 0)
+                return c;
+            if(preHash.length > 0 && ((ValueLOB) o).preHash.length > 0) { //compare hashed
+                for(int algos = 0;algos < HASHES.length; algos++) {
+                    if(preHash.length <= algos+1 || ((ValueLOB) o).preHash.length <= algos+1)
+                        break;
+                    byte[] h1 = preHash[algos];
+                    byte[] h2 = ((ValueLOB) o).preHash[algos];
+                    if(h1 != null && h2 != null)
+                        return Arrays.compare(h1, h2);
+                }
+            }
+
+            throw new IllegalStateException("No available hashes to compare objects");
+            //TODO: force comparing by hash, it is slow for large, I still considering...
+            /*try {
+                return Arrays.compare(forceHash(MD5), ((ValueLOB) o).forceHash(MD5));
+            } catch (IOException | NoSuchAlgorithmException e) {
+                throw new RuntimeException("forceHash for compare error "+e.toString());
+            }*/
+        }
+        //LOB always bigger than others
+        return 1;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null)
+            return false;
+        if(obj == this)
+            return true;
+        if(obj instanceof ValueLOB) {
+            if(this.size() != ((ValueLOB) obj).size())
+                return false;
+            if (preHash.length > 0 && ((ValueLOB) obj).preHash.length > 0) { //compare hashed
+                for (int algos = 0; algos < HASHES.length; algos++) {
+                    if (preHash.length <= algos + 1 || ((ValueLOB) obj).preHash.length <= algos + 1)
+                        break;
+                    byte[] h1 = preHash[algos];
+                    byte[] h2 = ((ValueLOB) obj).preHash[algos];
+                    if (h1 != null && h2 != null)
+                        return Arrays.equals(h1, h2);
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -74,16 +162,19 @@ public abstract class ValueLOB extends Value implements Closeable {
     public abstract InputStream getInputStream() throws IOException;
 
     /**
-     * LOB size in bytes.
+     * LOB length in bytes for BLOB and chars for CLOB.
      *
-     * @return
+     * @return number of bytes/chars
      */
     public long size() {
         return lobSize;
     }
 
     /**
-     * get pre-calculate hash by algorithm.
+     * Get pre-calculate hash by algorithm.
+     * If result is null, meaning no register to calculate it or not yet calculable.
+     *
+     * To force calculating use <b>forceHash()</b>
      *
      * @param algo
      * @return null if no calculated
@@ -95,12 +186,13 @@ public abstract class ValueLOB extends Value implements Closeable {
     }
 
     /**
-     * ensure that calculate hash (md5, sha1, sha256, etc)
+     * ensure that calculate hash (md5, sha1, sha256, etc) and return correct value.
+     * it may force the LOB to calculate registered hashes (if not calculated yet).
      *
      * @return true if ensure, false is it can not ensure.
      * @throws IOException
      */
-    public abstract byte[] ensureHash(int algo) throws IOException, NoSuchAlgorithmException;
+    public abstract byte[] forceHash(int algo) throws IOException, NoSuchAlgorithmException;
 
     /**
      * method for internal use.

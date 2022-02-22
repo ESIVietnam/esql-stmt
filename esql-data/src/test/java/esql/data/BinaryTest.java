@@ -2,8 +2,8 @@ package esql.data;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BinaryTest {
     @Test
@@ -48,4 +48,71 @@ public class BinaryTest {
         assertArrayEquals(in, ou, "HexToBytes not same");
     }
 
+    @Test
+    public void nullValueTest() {
+        ValueBytes v = ValueBytes.buildBytes((String) null);
+        assertEquals("", v.stringValue());
+        assertEquals(0, v.length(), "length should correct");
+        assertFalse(v.isArray(), "Must not be array");
+        assertTrue(v.isNull(), "Must be null");
+        assertTrue(v.isEmpty(), "Must be empty");
+        assertFalse(v.isTrue(), "Must be false");
+        assertTrue(v.is(Types.TYPE_BYTES), "Must be bytes");
+
+        ValueArray nv = v.bytesValueArray();
+        //assertEquals(ValueArray.ARRAY_PREFIX+ValueArray.ARRAY_POSTFIX, nv.stringValue());
+        assertEquals("", nv.stringValue());
+        assertEquals(0, nv.size(), "array use size should correct");
+        assertTrue(nv.isArray(), "Must be array");
+        assertTrue(nv.isNull(), "Must be null");
+        assertTrue(nv.isEmpty(), "Must be empty");
+        assertFalse(nv.isTrue(), "Must be false");
+        assertTrue(nv.is(Types.TYPE_BYTE), "Must be byte[]");
+    }
+
+    @Test
+    public void emptyValueTest() {
+        ValueBytes v = ValueBytes.buildBytes();
+        assertEquals("", v.stringValue());
+        assertEquals(0, v.length(), "length should correct");
+        assertFalse(v.isArray(), "Must not be array");
+        assertFalse(v.isNull(), "Must be null");
+        assertTrue(v.isEmpty(), "Must be empty");
+        assertFalse(v.isTrue(), "Must be false");
+        assertTrue(v.is(Types.TYPE_BYTES), "Must be bytes");
+
+        ValueArray nv = v.bytesValueArray();
+        assertEquals(ValueArray.ARRAY_PREFIX+ValueArray.ARRAY_POSTFIX, nv.stringValue());
+        assertEquals(0, nv.size(), "array use size should correct");
+        assertTrue(nv.isArray(), "Must be array");
+        assertFalse(nv.isNull(), "Must be null");
+        assertTrue(nv.isEmpty(), "Must be empty");
+        assertFalse(nv.isTrue(), "Must be false");
+        assertTrue(nv.is(Types.TYPE_BYTE), "Must be byte[]");
+    }
+
+    @Test
+    public void singleValueTest() {
+        ValueBytes v = ValueBytes.buildBytes(new byte[] { 0 });
+        //hexa
+        assertEquals("00", v.stringValue());
+        assertEquals(1, v.length(), "length should correct");
+        assertFalse(v.isArray(), "Must not be array");
+        assertFalse(v.isNull(), "Must be null");
+        assertFalse(v.isEmpty(), "Must be empty");
+        assertTrue(v.isTrue(), "Must be false");
+        assertTrue(v.is(Types.TYPE_BYTES), "Must be bytes");
+
+        v = ValueBytes.buildBytes(new byte[] { 1 });
+        //hexa
+        assertEquals("01", v.stringValue());
+        assertEquals(1, v.length(), "length should correct");
+
+        v = ValueBytes.buildBytes(new byte[] { 0x7f });
+        //hexa
+        assertEquals("7f", v.stringValue());
+
+        var nv = v.convertTo(Types.TYPE_STRING);
+        assertEquals("7f", nv.stringValue());
+    }
 }

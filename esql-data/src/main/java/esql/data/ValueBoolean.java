@@ -19,12 +19,13 @@ public class ValueBoolean extends ValueNumber {
 
     public static final ValueBoolean BOOL_TRUE = new ValueBoolean(true);
     public static final ValueBoolean BOOL_FALSE = new ValueBoolean(false);
+    public static final ValueBoolean NULL_BOOLEAN = new ValueNULLBoolean();
 
     enum BooleanChoice { TRUE_FALSE, YES_NO, ON_OFF, NUM0_1 };
 
     private final boolean val;
 
-    private ValueBoolean(Boolean v) {
+    private ValueBoolean(boolean v) {
         this.val = v;
     }
 
@@ -139,5 +140,36 @@ public class ValueBoolean extends ValueNumber {
     @Override
     public Types getType() {
         return Types.TYPE_BOOLEAN;
+    }
+
+    public static class ValueNULLBoolean extends ValueBoolean {
+
+        private ValueNULLBoolean() {
+            super(false);
+        }
+
+        @Override
+        public boolean isNull() {
+            return true;
+        }
+
+        @Override
+        public String stringValue() {
+            return Value.STRING_OF_NULL;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if(obj == this)
+                return true;
+            return false;
+        }
+
+        @Override
+        public int compareTo(Value o) {
+            if(o != null && o.isNull())
+                return 0;
+            return -1;
+        }
     }
 }

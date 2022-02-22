@@ -81,17 +81,16 @@ class ValueBLOBCreator implements Closeable {
 
     public ValueLOB buildBLOB() {
         if (lobSize == 0)
-            return ValueLOB.EMPTY_BLOB;
+            return ValueBLOB.EMPTY_BLOB;
         first_block.flip();
-        int max = Arrays.stream(hashAlgos).max().orElse(-1);
+
         byte[] first_in_mem = new byte[first_block.limit()];
         first_block.get(first_in_mem);
-        if(max < 0)
-            return new ValueBLOB(tempFile,first_in_mem , lobSize);
-        byte[][] hash_holder = new byte[max+1][];
+
+        byte[][] hash_holder = new byte[ValueLOB.HASHES.length][];
         for(int i = 0; i<hasher.length;i++)
             hash_holder[hashAlgos[i]] = hasher[i].digest();
-        return new ValueBLOB(tempFile, first_in_mem, lobSize,
+        return ValueBLOB.buildBLOB(tempFile, first_in_mem, lobSize,
                 hash_holder);
     }
 

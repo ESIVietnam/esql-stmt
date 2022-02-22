@@ -13,15 +13,16 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class ValueCLOBCreator  implements Closeable {
+    private final boolean national;
     CharBuffer first_block = CharBuffer.allocate(ValueLOB.MAX_BUFFERED_SIZE);
     private FileChannel fo = null;
     private Path tempFile = null;
-    private long stringLen = 0;
-    private long lobSize = 0;
+    private long length = 0;
     private MessageDigest[] hasher = {};
     private int[] hashAlgos = {};
 
-    ValueCLOBCreator(int... hashAlgorithms) throws NoSuchAlgorithmException {
+    ValueCLOBCreator(boolean national, int... hashAlgorithms) throws NoSuchAlgorithmException {
+        this.national = national;
         if(hashAlgorithms.length > 0) {
             hasher = new MessageDigest[hashAlgorithms.length];
             hashAlgos = new int[hashAlgorithms.length];
@@ -36,26 +37,51 @@ public class ValueCLOBCreator  implements Closeable {
         }
     }
 
+    public void writeToLOB(String s) throws IOException {
+        ByteBuffer x = ValueString.stringCharset(national).encode(s);
+        for(MessageDigest hash: hasher) {
+            hash.update(x);
+            x.rewind();
+        }
+        length += s.length();
+        if (first_block.hasRemaining() &&  first_block.remaining() >= s.length()) {
+            first_block.put(s);
+            return;
+        }
+        //splitted to first_block and other.
+        int len = Math.min(first_block.remaining(), s.length());
+        if(len > 0) {
+            first_block.put(s, 0, len);
+            s = s.substring(len);
+        }
+
+        //check to write first time
+        if (fo == null) {
+            tempFile = Files.createTempFile(ValueLOB.tempDir, "ESQL-CLOB", ".txt");
+            //write first block
+            first_block.flip();
+            fo = FileChannel.open(tempFile, StandardOpenOption.WRITE);
+            ByteBuffer fb = ValueString.stringCharset(national).encode(first_block);
+            while (fb.hasRemaining())
+                fo.write(fb);
+            //the position is limit now.
+        }
+        //convert again
+        x = ValueString.stringCharset(national).encode(s);
+        while (x.hasRemaining())
+            fo.write(x);
+    }
+
     public void writeToLOB(CharBuffer data) throws IOException {
         if (!data.hasRemaining())
             return;
         //HASH calculation
-        ByteBuffer x = ValueString.STRING_CONVERT_CHARSET.encode(data);
-        if (x.hasArray()) {
-            byte[] temp_array = x.array();
-            for(MessageDigest hash: hasher)
-                hash.update(temp_array, data.position(), data.limit());
-        } else {
-            x.mark();
-            while (x.hasRemaining()) {
-                byte d = x.get();
-                for(MessageDigest hash: hasher)
-                    hash.update(d);
-            }
-            x.reset();
+        ByteBuffer x = ValueString.stringCharset(national).encode(data);
+        for(MessageDigest hash: hasher) {
+            hash.update(x);
+            x.rewind();
         }
-        stringLen += data.remaining();
-        lobSize += x.remaining();
+        length += data.remaining();
         if (first_block.hasRemaining()) {
             int remain = first_block.remaining();
             if (remain >= data.remaining()) {
@@ -67,33 +93,32 @@ public class ValueCLOBCreator  implements Closeable {
         }
         //check to write first time
         if (fo == null) {
-            tempFile = Files.createTempFile(ValueLOB.tempDir, "ESQL-LOB", ".bin");
+            tempFile = Files.createTempFile(ValueLOB.tempDir, "ESQL-CLOB", ".txt");
             //write first block
-            fo = FileChannel.open(tempFile, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
-            ByteBuffer fb = ValueString.STRING_CONVERT_CHARSET.encode(first_block);
+            fo = FileChannel.open(tempFile, StandardOpenOption.WRITE);
+            ByteBuffer fb = ValueString.stringCharset(national).encode(first_block);
             while (fb.hasRemaining())
                 fo.write(fb);
             //the position is limit now.
         }
         //convert again
-        x = ValueString.STRING_CONVERT_CHARSET.encode(data);
+        x = ValueString.stringCharset(national).encode(data);
         while (x.hasRemaining())
             fo.write(x);
     }
 
-    public ValueLOB buildCLOB(boolean national) {
-        if (lobSize == 0)
-            return national ? ValueLOB.EMPTY_NCLOB : ValueLOB.EMPTY_CLOB;
-        int max = Arrays.stream(hashAlgos).max().orElse(-1);
+    public ValueLOB buildCLOB() {
+        if (length == 0)
+            return national ? ValueCLOB.EMPTY_NCLOB : ValueCLOB.EMPTY_CLOB;
         first_block.flip();
-        if(max < 0)
-            return new ValueCLOB(tempFile, Arrays.copyOf(first_block.array(), first_block.length()), lobSize, stringLen,
-                    national);
-        byte[][] hash_holder = new byte[max][];
+        char[] first_in_mem = new char[first_block.limit()];
+        first_block.get(first_in_mem);
+
+        byte[][] hash_holder = new byte[ValueLOB.HASHES.length][];
         for(int i = 0; i<hasher.length;i++)
             hash_holder[hashAlgos[i]] = hasher[i].digest();
-        return new ValueCLOB(tempFile, Arrays.copyOf(first_block.array(), first_block.length()), lobSize, stringLen,
-                national, hash_holder);
+        return ValueCLOB.buildCLOB(tempFile, first_in_mem, length, national,
+                hash_holder);
     }
 
     @Override
