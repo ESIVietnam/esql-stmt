@@ -638,17 +638,28 @@ final class ValueNumberObject extends ValueNumber {
     }
 
     @Override
-    public Value convertTo(Types toType) {
-        if (this.type.equals(toType))
-            return this;
-        if(Types.isString(toType))
-            return ValueString.buildString(toType,number.toString());
-        if(Types.TYPE_BOOLEAN.equals(toType))
-            if(Types.isInteger(type))
-                return ValueBoolean.buildBoolean(this.isTrue());
-            else
-                return ValueBoolean.BOOL_TRUE;
-        return Value.nullOf(toType);//can not cast, set null.
+    public Value convertTo(Types type) {
+        if(Types.isString(type))
+            return ValueString.buildString(type, number.toString());
+        if(Types.TYPE_BOOLEAN.equals(type))
+            return ValueBoolean.buildBoolean(this.isTrue());
+        if(Types.isNumber(type)) {
+            if (number instanceof BigInteger)
+                return buildNumber(type, (BigInteger) number);
+            if (number instanceof BigDecimal)
+                return buildNumber(type, (BigDecimal) number);
+            if (number instanceof Float)
+                return buildNumber(type, (Float) number);
+            if (number instanceof Double)
+                return buildNumber(type, (Double) number);
+            if (number instanceof Integer)
+                return buildNumber(type, (Integer) number);
+            if (number instanceof Long)
+                return buildNumber(type, (Long) number);
+        }
+        if(Types.isDateOrTime(type))
+            return ValueDateTime.buildDateTime(type, number.longValue());
+        throw new IllegalArgumentException("Can not convert to "+type);//can not cast, set null.
     }
 }
 
@@ -672,11 +683,12 @@ class ValueNumberLong extends ValueNumber {
         if(Types.isString(type))
             return ValueString.buildString(type, String.valueOf(value));
         if(Types.TYPE_BOOLEAN.equals(type))
-            if(Types.isInteger(type))
-                return ValueBoolean.buildBoolean(this.isTrue());
-            else
-                return ValueBoolean.BOOL_TRUE;
-        return Value.nullOf(type);//can not cast, set null.
+            return ValueBoolean.buildBoolean(this.isTrue());
+        if(Types.isNumber(type))
+            return ValueNumber.buildNumber(type, value);
+        if(Types.isDateOrTime(type))
+            return ValueDateTime.buildDateTime(type, value);
+        throw new IllegalArgumentException("Can not convert to "+type);//can not cast, set null.
     }
 
     @Override
@@ -817,11 +829,10 @@ final class ValueNumberInt extends ValueNumber {
         if(Types.isString(type))
             return ValueString.buildString(type, String.valueOf(value));
         if(Types.TYPE_BOOLEAN.equals(type))
-            if(Types.isInteger(type))
-                return ValueBoolean.buildBoolean(this.isTrue());
-            else
-                return ValueBoolean.BOOL_TRUE;
-        return Value.nullOf(type);//can not cast, set null.
+            return ValueBoolean.buildBoolean(this.isTrue());
+        if(Types.isNumber(type))
+            return ValueNumber.buildNumber(type, value);
+        throw new IllegalArgumentException("Can not convert to "+type);//can not cast, set null.
     }
 
     @Override
