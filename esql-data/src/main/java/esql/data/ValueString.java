@@ -42,8 +42,13 @@ public class ValueString extends Value {
     }
 
     @Override
+    public boolean isNull() {
+        return this.value == null;
+    }
+
+    @Override
     public boolean isEmpty() {
-        return this.value.isEmpty();
+        return isNull() || this.value.isEmpty();
     }
 
     @Override
@@ -84,10 +89,10 @@ public class ValueString extends Value {
         if(obj == this)
             return true;
         if (obj instanceof ValueString)
-            return this.value.equals(((ValueString) obj).value);
+            return this.value != null && this.value.equals(((ValueString) obj).value);
         if (obj instanceof Value)
-            return !((Value) obj).isNull() && this.value.equals(((Value) obj).stringValue());
-        return this.value.equals(obj);
+            return this.value != null && this.value.equals(((Value) obj).stringValue());
+        return false;
     }
 
     @Override
