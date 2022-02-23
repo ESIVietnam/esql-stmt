@@ -46,7 +46,7 @@ public class ValueCLOB extends ValueLOB {
 
     /**
      * wrapping a reader as CLOB, read/hash calculate on-demand.
-     * 
+     *
      * @param lobSourceReader
      * @param lobSize
      * @param national
