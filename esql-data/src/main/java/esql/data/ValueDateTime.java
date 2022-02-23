@@ -69,8 +69,19 @@ public abstract class ValueDateTime  extends Value {
         return new ValueTimestampWithTZ(val);
     }
 
-    public static Value buildDateTime(LocalTime val) {
+    static Value buildDateTime(LocalTime val) {
         return new ValueLocalTime(val);
+    }
+
+    /**
+     * build date or datetime from miliseconds from epoch.
+     *
+     * @param type
+     * @param value
+     * @return
+     */
+    static Value buildDateTime(Types type, long value) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
