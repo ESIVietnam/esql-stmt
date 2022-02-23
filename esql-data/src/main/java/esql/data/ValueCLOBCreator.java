@@ -107,7 +107,7 @@ public class ValueCLOBCreator  implements Closeable {
             fo.write(x);
     }
 
-    public ValueLOB buildCLOB() {
+    public ValueCLOB buildCLOB() {
         if (length == 0)
             return national ? ValueCLOB.EMPTY_NCLOB : ValueCLOB.EMPTY_CLOB;
         first_block.flip();
