@@ -194,26 +194,33 @@ class ValueLocalDate extends ValueDateTime {
     public int compareTo(Value o) {
         if(o == null || o.isNull())
             return 1; //always bigger
-        if(o.is(Types.TYPE_TIME))
-            throw new IllegalArgumentException("A date value is only comparable to date/datetime/timestamp value");
-        Temporal b = toTemporal();
-        if(b instanceof ChronoLocalDate) //same type
-            return this.value.compareTo((ChronoLocalDate) b);
-        if(b instanceof ChronoLocalDateTime) { //excluding time
-            int c = this.value.compareTo(((ChronoLocalDateTime) b).toLocalDate());
-            if(c == 0) //date-only always smaller datetime if same day.
-                return -1;
-            return c;
+        if(o instanceof ValueDateTime) {
+            if(o.is(Types.TYPE_TIME))
+                throw new IllegalArgumentException("A date value is only comparable to date/datetime/timestamp value");
+            Temporal b = ((ValueDateTime)o).toTemporal();
+            if (b instanceof ChronoLocalDate) //same type
+                return this.value.compareTo((ChronoLocalDate) b);
+            if (b instanceof ChronoLocalDateTime) { //excluding time
+                int c = this.value.compareTo(((ChronoLocalDateTime) b).toLocalDate());
+                if (c == 0) //date-only always smaller datetime if same day.
+                    return -1;
+                return c;
+            }
+            if (b instanceof Instant) { //convert to timestamp at local timezone
+                ZonedDateTime a = this.value.atStartOfDay(ZoneId.systemDefault());
+                return a.toInstant().compareTo((Instant) b);
+            }
+            if (b instanceof ChronoZonedDateTime) { //convert to timestamp at local timezone
+                ZonedDateTime a = this.value.atStartOfDay(ZoneId.systemDefault());
+                return a.compareTo((ChronoZonedDateTime) b);
+            }
+            throw new AssertionError();
         }
-        if(b instanceof Instant) { //convert to timestamp at local timezone
-            ZonedDateTime a = this.value.atStartOfDay(ZoneId.systemDefault());
-            return a.toInstant().compareTo((Instant) b);
+        if(o instanceof ValueNumber) {
+            long ts = ((ValueNumber)o).longValue();
+            return Long.compare(this.value.toEpochDay()*MILLISECONDS_PER_DAY, ts);
         }
-        if(b instanceof ChronoZonedDateTime) { //convert to timestamp at local timezone
-            ZonedDateTime a = this.value.atStartOfDay(ZoneId.systemDefault());
-            return a.compareTo((ChronoZonedDateTime) b);
-        }
-        throw new AssertionError();
+        throw new IllegalArgumentException("Can not compare to "+o);
     }
 
     @Override
@@ -270,23 +277,30 @@ class ValueLocalDateTime extends ValueDateTime {
     public int compareTo(Value o) {
         if(o == null || o.isNull())
             return 1; //always bigger
-        if(o.is(Types.TYPE_TIME))
-            throw new IllegalArgumentException("A datetime value is only comparable to date/datetime/timestamp value");
-        Temporal b = toTemporal();
-        if(b instanceof ChronoLocalDate) //without time
-            return this.value.compareTo(((ChronoLocalDate) b).atTime(LocalTime.MIDNIGHT));
-        if(b instanceof ChronoLocalDateTime) { //same type
-            return this.value.compareTo(((ChronoLocalDateTime) b));
+        if(o instanceof ValueDateTime) {
+            if(o.is(Types.TYPE_TIME))
+                throw new IllegalArgumentException("A datetime value is only comparable to date/datetime/timestamp value");
+            Temporal b = ((ValueDateTime) o).toTemporal();
+            if (b instanceof ChronoLocalDate) //without time
+                return this.value.compareTo(((ChronoLocalDate) b).atTime(LocalTime.MIDNIGHT));
+            if (b instanceof ChronoLocalDateTime) { //same type
+                return this.value.compareTo(((ChronoLocalDateTime) b));
+            }
+            if (b instanceof Instant) { //convert to timestamp at local timezone
+                ZonedDateTime a = this.value.atZone(ZoneId.systemDefault());
+                return a.toInstant().compareTo((Instant) b);
+            }
+            if (b instanceof ChronoZonedDateTime) { //convert to timestamp at local timezone
+                ZonedDateTime a = this.value.atZone(ZoneId.systemDefault());
+                return a.compareTo((ChronoZonedDateTime) b);
+            }
+            throw new AssertionError();
         }
-        if(b instanceof Instant) { //convert to timestamp at local timezone
-            ZonedDateTime a = this.value.atZone(ZoneId.systemDefault());
-            return a.toInstant().compareTo((Instant) b);
+        if(o instanceof ValueNumber) {
+            long ts = ((ValueNumber)o).longValue();
+            return Long.compare(this.value.toEpochSecond(ZoneOffset.of(ZoneId.systemDefault().getId()))*1000, ts);
         }
-        if(b instanceof ChronoZonedDateTime) { //convert to timestamp at local timezone
-            ZonedDateTime a = this.value.atZone(ZoneId.systemDefault());
-            return a.compareTo((ChronoZonedDateTime) b);
-        }
-        throw new AssertionError();
+        throw new IllegalArgumentException("Can not compare to "+o);
     }
 
     @Override
@@ -343,18 +357,25 @@ class ValueTimestamp extends ValueDateTime {
     public int compareTo(Value o) {
         if(o == null || o.isNull())
             return 1; //always bigger
-        if(o.is(Types.TYPE_TIME))
-            throw new IllegalArgumentException("A timestamp value is only comparable to date/datetime/timestamp value");
-        Temporal b = toTemporal();
-        if(b instanceof Instant) //same type
-            return this.value.compareTo(((Instant) b));
-        if(b instanceof ChronoLocalDate) //without time
-            return this.value.compareTo(((ChronoLocalDate) b).atTime(LocalTime.MIDNIGHT).toInstant(ZoneOffset.UTC));
-        if(b instanceof ChronoLocalDateTime) //from datetime
-            return this.value.compareTo(((ChronoLocalDateTime) b).toInstant(ZoneOffset.UTC));
-        if(b instanceof ChronoZonedDateTime) //convert to timestamp at local timezone
-            return value.compareTo(((ChronoZonedDateTime) b).toInstant());
-        throw new AssertionError();
+        if(o instanceof ValueDateTime) {
+            if(o.is(Types.TYPE_TIME))
+                throw new IllegalArgumentException("A timestamp value is only comparable to date/datetime/timestamp value");
+            Temporal b = ((ValueDateTime) o).toTemporal();
+            if (b instanceof Instant) //same type
+                return this.value.compareTo(((Instant) b));
+            if (b instanceof ChronoLocalDate) //without time
+                return this.value.compareTo(((ChronoLocalDate) b).atTime(LocalTime.MIDNIGHT).toInstant(ZoneOffset.UTC));
+            if (b instanceof ChronoLocalDateTime) //from datetime
+                return this.value.compareTo(((ChronoLocalDateTime) b).toInstant(ZoneOffset.UTC));
+            if (b instanceof ChronoZonedDateTime) //convert to timestamp at local timezone
+                return value.compareTo(((ChronoZonedDateTime) b).toInstant());
+            throw new AssertionError();
+        }
+        if(o instanceof ValueNumber) {
+            long ts = ((ValueNumber)o).longValue();
+            return Long.compare(this.value.toEpochMilli(), ts);
+        }
+        throw new IllegalArgumentException("Can not compare to "+o);
     }
 
     @Override
@@ -413,21 +434,28 @@ class ValueTimestampWithTZ extends ValueDateTime {
     public int compareTo(Value o) {
         if(o == null || o.isNull())
             return 1; //always bigger
-        if(o.is(Types.TYPE_TIME))
-            throw new IllegalArgumentException("A timestamp value is only comparable to date/datetime/timestamp value");
-        Temporal b = toTemporal();
-        if(b instanceof Instant) { //convert to timestamp at local timezone
-            Instant a = this.value.toInstant();
-            return a.compareTo((Instant) b);
+        if(o instanceof ValueDateTime) {
+            if(o.is(Types.TYPE_TIME))
+                throw new IllegalArgumentException("A timestamp value is only comparable to date/datetime/timestamp value");
+            Temporal b = ((ValueDateTime) o).toTemporal();
+            if (b instanceof Instant) { //convert to timestamp at local timezone
+                Instant a = this.value.toInstant();
+                return a.compareTo((Instant) b);
+            }
+            if (b instanceof ChronoZonedDateTime) //same type
+                return this.value.compareTo(((ChronoZonedDateTime) b));
+            if (b instanceof ChronoLocalDate) //without time
+                return this.value.compareTo(((ChronoLocalDate) b).atTime(LocalTime.MIDNIGHT).atZone(ZoneId.systemDefault()));
+            if (b instanceof ChronoLocalDateTime) { //from datetime
+                return this.value.compareTo(((ChronoLocalDateTime) b).atZone(ZoneId.systemDefault()));
+            }
+            throw new AssertionError();
         }
-        if(b instanceof ChronoZonedDateTime) //same type
-            return this.value.compareTo(((ChronoZonedDateTime) b));
-        if(b instanceof ChronoLocalDate) //without time
-            return this.value.compareTo(((ChronoLocalDate) b).atTime(LocalTime.MIDNIGHT).atZone(ZoneId.systemDefault()));
-        if(b instanceof ChronoLocalDateTime) { //from datetime
-            return this.value.compareTo(((ChronoLocalDateTime) b).atZone(ZoneId.systemDefault()));
+        if(o instanceof ValueNumber) {
+            long ts = ((ValueNumber)o).longValue();
+            return Long.compare(this.value.toEpochSecond()*1000, ts);
         }
-        throw new AssertionError();
+        throw new IllegalArgumentException("Can not compare to "+o);
     }
 
     @Override
@@ -486,11 +514,17 @@ class ValueLocalTime extends ValueDateTime {
     public int compareTo(Value o) {
         if (o == null || o.isNull())
             return 1; //always bigger
-        if(!o.is(Types.TYPE_TIME))
-            throw new IllegalArgumentException("A time value is only comparable to time value");
-        LocalTime b = (LocalTime) toTemporal();
-
-        return this.value.compareTo(b);
+        if(o instanceof ValueDateTime) {
+            if(!o.is(Types.TYPE_TIME))
+                throw new IllegalArgumentException("A time value is only comparable to time value");
+            LocalTime b = (LocalTime)((ValueDateTime) o).toTemporal();
+            return this.value.compareTo(b);
+        }
+        if(o instanceof ValueNumber) {
+            long ts = ((ValueNumber)o).longValue();
+            return Long.compare(this.value.toEpochSecond(LocalDate.now(), ZoneOffset.of(ZoneId.systemDefault().getId()))*1000, ts);
+        }
+        throw new IllegalArgumentException("Can not compare to "+o);
     }
 
     @Override
