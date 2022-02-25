@@ -157,6 +157,10 @@ public enum Types {
             case TYPE_SHORT:
             case TYPE_INT:
             case TYPE_LONG:
+            case TYPE_UBYTE:
+            case TYPE_USHORT:
+            case TYPE_UINT:
+            case TYPE_ULONG:
                 return true;
             default:
                 break;
