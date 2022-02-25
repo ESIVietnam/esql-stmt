@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.time.*;
 import java.time.chrono.*;
 import java.time.temporal.Temporal;
+import java.util.TimeZone;
 
 public abstract class ValueDateTime  extends Value {
 
@@ -192,7 +193,7 @@ class ValueLocalDate extends ValueDateTime {
 
     @Override
     public int compareTo(Value o) {
-        if(o == null || o.isNull())
+        if(o == null || o.isEmpty())
             return 1; //always bigger
         if(o instanceof ValueDateTime) {
             if(o.is(Types.TYPE_TIME))
@@ -219,6 +220,9 @@ class ValueLocalDate extends ValueDateTime {
         if(o instanceof ValueNumber) {
             long ts = ((ValueNumber)o).longValue();
             return Long.compare(this.value.toEpochDay()*MILLISECONDS_PER_DAY, ts);
+        }
+        if(o instanceof ValueString) {
+            return this.value.toString().compareTo(o.stringValue());
         }
         throw new IllegalArgumentException("Can not compare to "+o);
     }
@@ -275,7 +279,7 @@ class ValueLocalDateTime extends ValueDateTime {
 
     @Override
     public int compareTo(Value o) {
-        if(o == null || o.isNull())
+        if(o == null || o.isEmpty())
             return 1; //always bigger
         if(o instanceof ValueDateTime) {
             if(o.is(Types.TYPE_TIME))
@@ -298,7 +302,11 @@ class ValueLocalDateTime extends ValueDateTime {
         }
         if(o instanceof ValueNumber) {
             long ts = ((ValueNumber)o).longValue();
-            return Long.compare(this.value.toEpochSecond(ZoneOffset.of(ZoneId.systemDefault().getId()))*1000, ts);
+            ZoneId systemZone = ZoneId.systemDefault();
+            return Long.compare(this.value.toEpochSecond(systemZone.getRules().getOffset(this.value))*1000, ts);
+        }
+        if(o instanceof ValueString) {
+            return this.value.toString().compareTo(o.stringValue());
         }
         throw new IllegalArgumentException("Can not compare to "+o);
     }
@@ -320,7 +328,8 @@ class ValueLocalDateTime extends ValueDateTime {
             case TYPE_FLOAT:
             case TYPE_DOUBLE:
                 //convert epoch days to milliseconds
-                return ValueNumber.buildNumber(type, this.value.toEpochSecond(ZoneOffset.of(ZoneId.systemDefault().getId())) * 1000);
+                ZoneId systemZone = ZoneId.systemDefault();
+                return ValueNumber.buildNumber(type, this.value.toEpochSecond(systemZone.getRules().getOffset(this.value)) * 1000);
             case TYPE_STRING:
             case TYPE_NSTRING:
                 return ValueString.buildString(type, this.value.toString());
@@ -355,7 +364,7 @@ class ValueTimestamp extends ValueDateTime {
 
     @Override
     public int compareTo(Value o) {
-        if(o == null || o.isNull())
+        if(o == null || o.isEmpty())
             return 1; //always bigger
         if(o instanceof ValueDateTime) {
             if(o.is(Types.TYPE_TIME))
@@ -374,6 +383,9 @@ class ValueTimestamp extends ValueDateTime {
         if(o instanceof ValueNumber) {
             long ts = ((ValueNumber)o).longValue();
             return Long.compare(this.value.toEpochMilli(), ts);
+        }
+        if(o instanceof ValueString) {
+            return this.value.toString().compareTo(o.stringValue());
         }
         throw new IllegalArgumentException("Can not compare to "+o);
     }
@@ -432,7 +444,7 @@ class ValueTimestampWithTZ extends ValueDateTime {
 
     @Override
     public int compareTo(Value o) {
-        if(o == null || o.isNull())
+        if(o == null || o.isEmpty())
             return 1; //always bigger
         if(o instanceof ValueDateTime) {
             if(o.is(Types.TYPE_TIME))
@@ -454,6 +466,9 @@ class ValueTimestampWithTZ extends ValueDateTime {
         if(o instanceof ValueNumber) {
             long ts = ((ValueNumber)o).longValue();
             return Long.compare(this.value.toEpochSecond()*1000, ts);
+        }
+        if(o instanceof ValueString) {
+            return this.value.toString().compareTo(o.stringValue());
         }
         throw new IllegalArgumentException("Can not compare to "+o);
     }
@@ -512,7 +527,7 @@ class ValueLocalTime extends ValueDateTime {
 
     @Override
     public int compareTo(Value o) {
-        if (o == null || o.isNull())
+        if (o == null || o.isEmpty())
             return 1; //always bigger
         if(o instanceof ValueDateTime) {
             if(!o.is(Types.TYPE_TIME))
@@ -522,7 +537,10 @@ class ValueLocalTime extends ValueDateTime {
         }
         if(o instanceof ValueNumber) {
             long ts = ((ValueNumber)o).longValue();
-            return Long.compare(this.value.toEpochSecond(LocalDate.now(), ZoneOffset.of(ZoneId.systemDefault().getId()))*1000, ts);
+            return Long.compare(this.value.toSecondOfDay()*1000, ts);
+        }
+        if(o instanceof ValueString) {
+            return this.value.toString().compareTo(o.stringValue());
         }
         throw new IllegalArgumentException("Can not compare to "+o);
     }
