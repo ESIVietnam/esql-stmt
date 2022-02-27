@@ -36,6 +36,8 @@ public class ValueCLOB extends ValueLOB {
     public static ValueCLOB wrap(String data, boolean national, int...hashAlgos) throws NoSuchAlgorithmException {
         byte[][] hash_holder = new byte[HASHES.length][];
         byte[] buff = data.getBytes(ValueString.stringCharset(national));
+        if(hashAlgos.length == 0)
+            hashAlgos = DEFAULT_HASH_ALGOS;
         for(int i = 0;i<hashAlgos.length;i++) {
             //digest
             MessageDigest hash = MessageDigest.getInstance(HASHES[hashAlgos[i]]);

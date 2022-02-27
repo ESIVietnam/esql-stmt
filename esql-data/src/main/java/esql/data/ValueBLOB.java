@@ -18,9 +18,11 @@ import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 
 public class ValueBLOB extends ValueLOB {
 
+    public static final Pattern BASE64_PATTERN = Pattern.compile("^[0-9A-Za-z+/]+=?=?$");
     public static final ValueBLOB NULL_BLOB = new ValueBLOB(null, null, 0L, EMPTY_HASHES[MD5], EMPTY_HASHES[SHA1], EMPTY_HASHES[SHA256], EMPTY_HASHES[SHA384], EMPTY_HASHES[SHA512]);
     public static final ValueBLOB EMPTY_BLOB = new ValueBLOB(null, EMPTY_BYTES, 0L, EMPTY_HASHES[MD5], EMPTY_HASHES[SHA1], EMPTY_HASHES[SHA256], EMPTY_HASHES[SHA384], EMPTY_HASHES[SHA512]);
 
