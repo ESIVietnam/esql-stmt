@@ -1,7 +1,10 @@
 package esql.data;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 /**
@@ -9,6 +12,7 @@ import java.util.stream.IntStream;
  * It is always input or output to hex-string.
  */
 public class ValueBytes extends Value {
+    public static final Pattern HEX_STRING_MATCH = Pattern.compile("^[0-9A-Fa-f]+$");
 
     private final static byte[] EMPTY_BYTES = new byte[0];
     static final ValueBytes EMPTY_BINARY_STRING = new ValueBytes(EMPTY_BYTES);
@@ -45,7 +49,7 @@ public class ValueBytes extends Value {
 
     @Override
     public boolean isEmpty() {
-        return isNull() || data.length == 0;
+        return data == null || data.length == 0;
     }
 
     @Override
@@ -57,7 +61,29 @@ public class ValueBytes extends Value {
     public Value convertTo(Types type) {
         if(this.isNull())
             return Value.nullOf(type);
-        return null;
+        if(is(type))
+            return this;
+        switch (type) {
+            case TYPE_BLOB:
+                try {
+                    return ValueBLOB.wrap(this.data, this.data.length);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new AssertionError();
+                }
+            case TYPE_CLOB:
+            case TYPE_NCLOB:
+                try {
+                    return ValueCLOB.wrap(bytesToHex(this.data), Types.TYPE_NCLOB.equals(type));
+                } catch (NoSuchAlgorithmException e) {
+                    throw new AssertionError();
+                }
+            case TYPE_BOOLEAN:
+                return ValueBoolean.buildBoolean(this.data.length != 0);
+            case TYPE_STRING:
+            case TYPE_NSTRING:
+                return ValueString.buildString(type, bytesToHex(this.data));
+        }
+        throw new IllegalArgumentException("can not convert from bytes to "+type.getAbbreviation());
     }
 
     @Override
@@ -67,7 +93,7 @@ public class ValueBytes extends Value {
 
     @Override
     public String stringValue() {
-        if(isEmpty())
+        if(data == null || data.length == 0)
             return "";
         return bytesToHex(data);
     }
@@ -152,13 +178,13 @@ public class ValueBytes extends Value {
      * @return byte array
      */
     public byte[] bytesArray() {
-        if(isEmpty()) //empty array
+        if(data == null || data.length == 0) //null or empty array
             return EMPTY_BYTES;
         return Arrays.copyOf(data, data.length);
     }
 
     byte[] backedBytesArray() {
-        if(isEmpty()) //empty array
+        if(data == null || data.length == 0) //empty array
             return EMPTY_BYTES;
         return data;
     }
@@ -169,9 +195,9 @@ public class ValueBytes extends Value {
      */
     public ValueArray bytesValueArray() {
         if(isNull())
-            return ValueArrayNULLEmpty.buildNullArray(Types.TYPE_BYTE);
+            return ValueArray.ValueArrayNULLEmpty.buildNullArray(Types.TYPE_BYTE);
         if(isEmpty())
-            return ValueArrayNULLEmpty.buildEmptyArray(Types.TYPE_BYTE);
+            return ValueArray.ValueArrayNULLEmpty.buildEmptyArray(Types.TYPE_BYTE);
         Value[] a = new Value[data.length];
         for(int i=0;i<a.length;i++)
             a[i] = Value.valueOf(data[i]);

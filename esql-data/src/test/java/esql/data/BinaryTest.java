@@ -114,5 +114,12 @@ public class BinaryTest {
 
         var nv = v.convertTo(Types.TYPE_STRING);
         assertEquals("7f", nv.stringValue());
+
+        v = ValueBytes.buildBytes(new byte[] { 0x18, 0x7f });
+        //hexa
+        assertEquals("187f", v.stringValue());
+
+        nv = v.convertTo(Types.TYPE_STRING);
+        assertEquals("187f", nv.stringValue());
     }
 }

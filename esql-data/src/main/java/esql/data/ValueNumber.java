@@ -2,6 +2,7 @@ package esql.data;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class ValueNumber extends Value {
@@ -309,14 +310,6 @@ public abstract class ValueNumber extends Value {
     public abstract double doubleValue();
     public abstract BigDecimal decimalValue();
     public abstract BigInteger bigIntValue();
-
-    public static boolean isIntegerString(String val) {
-        return val!=null && INTEGER_PATTERN.matcher(val).matches();
-    }
-
-    public static boolean isDecimalString(String val) {
-        return isIntegerString(val) || val!=null && DECIMAL_PATTERN.matcher(val).matches();
-    }
 
     @Override
     public boolean isEmpty() {
