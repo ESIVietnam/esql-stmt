@@ -16,98 +16,78 @@ public class ValueNumberTest {
 
 	@Test
 	public void valueNumberTest() {
-		//Các kiểu UBYTE , USHORT , ULONG , UINT chưa được định nghĩa trong phương thức isNumber
-		
+
+
 		//------------------------buildNumber(Types type, double num)--------------------------------------
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (double) 3000), new ValueNumberInt(Types.TYPE_INT,(int) 3000));
 
-		//assertEquals(ValueNumber.buildNumber(Types.TYPE_UBYTE, (double) 3000), new ValueNumberInt(Types.TYPE_UBYTE,(int) 3000));
-		assertThrows(IllegalArgumentException.class, new Executable() {
-
-			@Override
-			public void execute() throws Throwable {
-				ValueNumber.buildNumber(Types.TYPE_UBYTE, (double) 3000);
-			}
-		});
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_UBYTE, (double) 3000), new ValueNumberInt(Types.TYPE_UBYTE,(int) 3000));
 
 
 
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_SHORT, (double) 3000), new ValueNumberInt(Types.TYPE_SHORT,(int) 3000));
 
-		//assertEquals(ValueNumber.buildNumber(Types.TYPE_USHORT, (double) 3000), new ValueNumberInt(Types.TYPE_USHORT,(int) 3000));
-		assertThrows(IllegalArgumentException.class, new Executable() {
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_USHORT, (double) 3000), new ValueNumberInt(Types.TYPE_USHORT,(int) 3000));
+		
 
-			@Override
-			public void execute() throws Throwable {
-				ValueNumber.buildNumber(Types.TYPE_USHORT, (double) 3000);
-			}
-		});
 
-		//assertEquals(ValueNumber.buildNumber(Types.TYPE_UINT, (double) 3000), new ValueNumberUInt((long) 3000));
-		assertThrows(IllegalArgumentException.class, new Executable() {
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_UINT, (double) 3000), new ValueNumberUInt((long) 3000));
 
-			@Override
-			public void execute() throws Throwable {
-				ValueNumber.buildNumber(Types.TYPE_UINT, (double) 3000);
-			}
-		});
+		
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (double) 3000), new ValueNumberLong((long) 3000));
-		//assertEquals(ValueNumber.buildNumber(Types.TYPE_ULONG, (double) 3000), new ValueNumberObject(Types.TYPE_ULONG, new BigInteger(String.valueOf(3000))));
-		assertThrows(IllegalArgumentException.class, new Executable() {
+//		assertEquals(ValueNumber.buildNumber(Types.TYPE_ULONG, (double) 3000),new ValueNumberObject(Types.TYPE_ULONG, new BigInteger(String.valueOf(3000))));
+		assertThrows(NumberFormatException.class, new Executable() {
 
 			@Override
 			public void execute() throws Throwable {
 				ValueNumber.buildNumber(Types.TYPE_ULONG, (double) 3000);
+				
 			}
 		});
-		
+
 
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_DECIMAL, (double) 3000), new ValueNumberObject(Types.TYPE_DECIMAL, BigDecimal.valueOf((double)3000)));
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_FLOAT, (double) 3000),new ValueNumberObject(Types.TYPE_FLOAT, Float.valueOf((float) 3000)));
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_DOUBLE, (double) 3000),new ValueNumberObject(Types.TYPE_DOUBLE, Double.valueOf(3000)));
-		//assertEquals(ValueNumber.buildNumber(Types.TYPE_BOOLEAN, (double) 3000), ValueBoolean.buildBoolean(true));
 		assertThrows(IllegalArgumentException.class, new Executable() {
 
 			@Override
 			public void execute() throws Throwable {
 				ValueNumber.buildNumber(Types.TYPE_BOOLEAN, (double) 3000);
-			}
-		});
-		
-		//assertEquals(ValueNumber.buildNumber(Types.TYPE_BOOLEAN, (double) 0), ValueBoolean.buildBoolean(false));
-		assertThrows(IllegalArgumentException.class, new Executable() {
 
-			@Override
-			public void execute() throws Throwable {
-				ValueNumber.buildNumber(Types.TYPE_BOOLEAN, (double) 3000);
 			}
 		});
+
+
 
 		//------------------------buildNumber(Types type, long num)--------------------------------------
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (long) 3000), new ValueNumberInt(Types.TYPE_INT,(int) 3000));
-		//		assertEquals(ValueNumber.buildNumber(Types.TYPE_UBYTE, (long) 3000), new ValueNumberInt(Types.TYPE_UBYTE,(int) 3000));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_UBYTE, (long) 3000), new ValueNumberInt(Types.TYPE_UBYTE,(int) 3000));
+
+
+
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_SHORT, (long) 3000), new ValueNumberInt(Types.TYPE_SHORT,(int) 3000));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_USHORT, (long) 3000), new ValueNumberInt(Types.TYPE_USHORT,(int) 3000));
+
+
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_UINT, (long) 3000), new ValueNumberUInt(3000));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (long) 3000), new ValueNumberLong(3000));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_ULONG, (long) 3000), new ValueNumberObject(Types.TYPE_ULONG, BigInteger.valueOf(3000)));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_DECIMAL, (long) 3000), new ValueNumberObject(Types.TYPE_DECIMAL, BigDecimal.valueOf(3000)));
+
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_FLOAT, (long) 3000),new ValueNumberObject(Types.TYPE_FLOAT, Float.valueOf(3000)));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_DOUBLE, (long) 3000),new ValueNumberObject(Types.TYPE_DOUBLE, Double.valueOf(3000)));
+
+
 		assertThrows(IllegalArgumentException.class, new Executable() {
 
 			@Override
 			public void execute() throws Throwable {
-				ValueNumber.buildNumber(Types.TYPE_UBYTE, (double) 3000);
+				ValueNumber.buildNumber(Types.TYPE_BOOLEAN, (long) 3000);
+
 			}
 		});
-		
-		
-		assertEquals(ValueNumber.buildNumber(Types.TYPE_SHORT, (long) 3000), new ValueNumberInt(Types.TYPE_SHORT,(int) 3000));
-		//		assertEquals(ValueNumber.buildNumber(Types.TYPE_USHORT, (long) 3000), new ValueNumberInt(Types.TYPE_USHORT,(int) 3000));
 
-
-		//		assertEquals(ValueNumber.buildNumber(Types.TYPE_UINT, (long) 3000), new ValueNumberUInt(3000));
-		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (long) 3000), new ValueNumberLong(3000));
-		//		assertEquals(ValueNumber.buildNumber(Types.TYPE_ULONG, (long) 3000), new ValueNumberObject(Types.TYPE_ULONG, BigInteger.valueOf(3000)));
-		//		assertEquals(ValueNumber.buildNumber(Types.TYPE_DECIMAL, (long) 3000), new ValueNumberObject(Types.TYPE_DECIMAL, BigDecimal.valueOf(3000)));
-
-		assertEquals(ValueNumber.buildNumber(Types.TYPE_FLOAT, (long) 3000),new ValueNumberObject(Types.TYPE_FLOAT, Float.valueOf(3000)));
-		assertEquals(ValueNumber.buildNumber(Types.TYPE_DOUBLE, (long) 3000),new ValueNumberObject(Types.TYPE_DOUBLE, Double.valueOf(3000)));
-		//		assertEquals(ValueNumber.buildNumber(Types.TYPE_BOOLEAN, (long) 3000), ValueBoolean.buildBoolean(true));
-		//		assertEquals(ValueNumber.buildNumber(Types.TYPE_BOOLEAN, (long) 0), ValueBoolean.buildBoolean(false));
 
 
 		//--------------------------------------buildNumber(Types type, BigDecimal num)--------------------------------------------------------
@@ -125,9 +105,8 @@ public class ValueNumberTest {
 
 
 
-//
-//		assertTrue(ValueNumber.isIntegerString("30000"));
-//		assertTrue(ValueNumber.isDecimalString("50000.0"));
+
+
 
 	}
 
@@ -151,8 +130,8 @@ public class ValueNumberTest {
 				valueTypeNumberBigInt.compareTo(null);
 			}
 		});
-		
-		
+
+
 		assertEquals(valueTypeNumberBigInt.compareTo(valueTypeNumberBigInt), 0);
 
 		/*Test
