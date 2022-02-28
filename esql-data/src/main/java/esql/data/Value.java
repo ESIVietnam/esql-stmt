@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;
+import java.util.regex.Matcher;
 
 /**
  * ESQL Stmt data generic value, hold a scalar or vector data (array or data tree), or LOB data.
@@ -14,6 +15,28 @@ public abstract class Value implements Serializable, Comparable<Value> {
     public static final ValueNULL NULL_DATA_TREE = new ValueNULL(Types.TYPE_DATA_TREE);
     public static final ValueNULL NULL_XML = new ValueNULL(Types.TYPE_XML);
     public static final ValueNULL NULL_JSON = new ValueNULL(Types.TYPE_JSON);
+
+    public static Matcher matchHexString(CharSequence value) {
+        return ValueBytes.HEX_STRING_MATCH.matcher(value);
+    }
+
+    public static Matcher matchIntegerString(CharSequence val) {
+        return ValueNumber.INTEGER_PATTERN.matcher(val);
+    }
+
+    public static Matcher matchDecimalString(CharSequence val) {
+        var m = matchIntegerString(val);
+        if(m == null)
+            return m;
+        return ValueNumber.DECIMAL_PATTERN.matcher(val);
+    }
+
+    public static boolean isBase64String(CharSequence value) {
+        if(value.length() == 0 || value.length() % 4 != 0)
+            return false;
+        var m = ValueBLOB.BASE64_PATTERN.matcher(value);
+        return m.matches();
+    }
 
     /**
      * The value is empty as definition.
@@ -360,4 +383,58 @@ public static Value buildValue(ResultSet rs, int coltype, int column) throws ESI
         return getType()+":"+stringValue();
     }
 
+    public static class ValueNULL extends Value {
+
+        private final Types type;
+        ValueNULL(Types type) {
+            this.type = type;
+        }
+
+        @Override
+        public boolean isNull() {
+            return true;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return true;
+        }
+
+        @Override
+        public boolean isTrue() {
+            return false;
+        }
+
+        @Override
+        public String stringValue() {
+            return STRING_OF_NULL;
+        }
+
+        @Override
+        public int compareTo(Value o) {
+            if(o == null || o.isNull())
+                return 0;
+            return -1;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if(obj == null || obj == this)
+                return true;
+            if (obj instanceof Value)
+                return ((Value) obj).isNull();
+            return false;
+        }
+
+        @Override
+        public Value convertTo(Types type) {
+            return nullOf(type);
+        }
+
+        @Override
+        public Types getType() {
+            return type;
+        }
+
+    }
 }

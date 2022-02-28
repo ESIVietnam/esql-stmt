@@ -16,7 +16,7 @@ public class ValueArrayByArray extends ValueArray {
     ValueArrayByArray(Types type, Value... array) {
         this.type = type;
         if(array.length == 0)
-            this.array = ValueArrayNULLEmpty.EMPTY_ARRAY;
+            this.array = ValueArray.EMPTY_ARRAY;
         else
             this.array = array;
     }
@@ -24,7 +24,7 @@ public class ValueArrayByArray extends ValueArray {
     ValueArrayByArray(Types type, Collection<Value> list) {
         this.type = type;
         if(list.isEmpty())
-            this.array = ValueArrayNULLEmpty.EMPTY_ARRAY;
+            this.array = ValueArray.EMPTY_ARRAY;
         else {
             this.array = new Value[list.size()];
             list.toArray(array);

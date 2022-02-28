@@ -160,7 +160,7 @@ public class ValueDateTimeTest {
 		assertEquals(valueTimestamp.compareTo(valueLocalDateTime),1);
 		assertEquals(valueTimestamp.compareTo(valueTimestampWithTZ),0);
 		
-		assertEquals(null, null);
+		
 		
 		
 		

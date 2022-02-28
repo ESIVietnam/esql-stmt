@@ -84,12 +84,12 @@ public class ValueBoolean extends ValueNumber {
     @Override
     public Value convertTo(Types type) {
         if(Types.isInteger(type))
-            return ValueNumber.buildNumber(type,(long)(val ? 1 : 0));
+            return ValueNumber.buildNumber(type, (val ? 1 : 0));
         if(Types.isNumber(type))
             return ValueNumber.buildNumber(type,(double)(val ? 1 : 0));
         if(Types.isString(type))
             return ValueString.buildString(type, val ? STR_TRUE : STR_FALSE);
-        throw new ClassCastException();
+        throw new IllegalArgumentException("can not convert boolean to "+type);
     }
 
     @Override
@@ -170,6 +170,11 @@ public class ValueBoolean extends ValueNumber {
             if(o != null && o.isNull())
                 return 0;
             return -1;
+        }
+
+        @Override
+        public Value convertTo(Types type) {
+            return Value.nullOf(type);
         }
     }
 }

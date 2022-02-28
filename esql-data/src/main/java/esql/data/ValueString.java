@@ -1,7 +1,16 @@
 package esql.data;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
+import java.util.Base64;
 import java.util.Optional;
 
 public class ValueString extends Value {
@@ -53,7 +62,7 @@ public class ValueString extends Value {
 
     @Override
     public boolean isTrue() {
-        return !this.value.isEmpty();
+        return !isEmpty();
     }
     
 
@@ -61,10 +70,102 @@ public class ValueString extends Value {
     public Value convertTo(Types type) {
         if(getType().equals(type))
             return this; //same
+        if(this.isNull())
+            return Value.nullOf(type);
         if(Types.isString(type))
             return buildString(type, this.value);
-        //TODO: them sau
-        throw new IllegalArgumentException("can not cast from string to "+type.getAbbreviation());
+        if(this.isEmpty())
+            return Value.nullOf(type);
+        //String se chuyen thanh cac loai khac neu safely convertible
+        switch (type) {
+            case TYPE_DATE:
+               //parse as date
+               return ValueDateTime.buildDateTime(LocalDate.parse(this.value));
+            case TYPE_TIME:
+               //parse as date
+               return ValueDateTime.buildDateTime(LocalTime.parse(this.value));
+            case TYPE_DATETIME:
+               //parse as date
+               return ValueDateTime.buildDateTime(LocalDateTime.parse(this.value));
+            case TYPE_TIMESTAMP:
+               //parse as date
+               return ValueDateTime.buildDateTime(Instant.parse(this.value));
+            case TYPE_BYTE:
+            case TYPE_UBYTE:
+            case TYPE_SHORT:
+            case TYPE_USHORT:
+            case TYPE_INT:
+            case TYPE_UINT:
+            case TYPE_LONG:
+                {//as integer types
+                    var m1 = Value.matchIntegerString(this.value);
+                    if (m1.matches())
+                        return ValueNumber.buildNumber(type, Long.parseLong(this.value));
+                    var m2 = Value.matchDecimalString(this.value);
+                    if (m2.matches())
+                        return ValueNumber.buildNumber(type, Long.parseLong(m2.group(1))); //first group
+                }
+                throw new NumberFormatException("NaN");
+            case TYPE_ULONG:
+                {
+                    var m1 = Value.matchIntegerString(this.value);
+                    if(m1.matches())
+                        return ValueNumber.buildNumber(type, new BigInteger(this.value));
+                    var m2 = Value.matchDecimalString(this.value);
+                    if(m2.matches())
+                        return ValueNumber.buildNumber(type, new BigInteger(m2.group(1))); //first group
+
+                }
+                throw new NumberFormatException("NaN");
+            case TYPE_DECIMAL:
+                try {
+                    //parsing as BigDecimal
+                    var v = new BigDecimal(this.value);
+                    return ValueNumber.buildNumber(type, v);
+                }
+                catch (NumberFormatException e) {
+                    //ignore
+                    assert true;
+                }
+                throw new NumberFormatException("NaN");
+            case TYPE_FLOAT:
+            case TYPE_DOUBLE:
+                //parsing as Double
+                return ValueNumber.buildNumber(type, Double.parseDouble(this.value));
+            case TYPE_BOOLEAN:
+                return ValueBoolean.buildBoolean(!this.value.isEmpty());
+            case TYPE_DATA_TREE:
+                break;
+            case TYPE_XML:
+                break;
+            case TYPE_JSON:
+                break;
+            case TYPE_CLOB:
+            case TYPE_NCLOB:
+                try {
+                    return ValueCLOB.wrap(this.value, Types.TYPE_NCLOB.equals(type));
+                } catch (NoSuchAlgorithmException e) {
+                    throw new AssertionError(e);
+                }
+            case TYPE_BLOB:
+                //base64 convert?
+                try {
+                    if(Value.isBase64String(this.value)) {
+                        var decoder = Base64.getDecoder();
+                        var buff = decoder.decode(this.value);
+                        return ValueBLOB.wrap(buff, buff.length);
+                    }
+                } catch (NoSuchAlgorithmException e) {
+                    throw new AssertionError(e);
+                }
+                return Value.nullOf(type);
+            case TYPE_BYTES:
+                var bm = Value.matchHexString(this.value);
+                if(bm.matches())
+                    return ValueBytes.buildBytes(ValueBytes.hexToBytes(this.value));
+                throw new NumberFormatException("not a hex string");
+        }
+        throw new IllegalArgumentException("can not convert from string to "+type.getAbbreviation());
         //return null;
     }
 
