@@ -773,7 +773,7 @@ class NumberElement implements ValueDataTreeElement {
     }
 }
 
-class SubTreeElement implements ValueDataTreeElement {
+class SubTreeElement    implements ValueDataTreeElement {
     private final Map<Key, ValueDataTreeElement> map;
 
     SubTreeElement(Map<Key, ValueDataTreeElement> map) {
