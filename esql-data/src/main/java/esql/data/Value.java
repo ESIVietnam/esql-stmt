@@ -12,6 +12,9 @@ import java.util.regex.Matcher;
 public abstract class Value implements Serializable, Comparable<Value> {
 
     public static final String STRING_OF_NULL = "";
+    public static final ValueNULL NULL_DATA_TREE = new ValueNULL(Types.TYPE_DATA_TREE);
+    public static final ValueNULL NULL_XML = new ValueNULL(Types.TYPE_XML);
+    public static final ValueNULL NULL_JSON = new ValueNULL(Types.TYPE_JSON);
 
     public static Matcher matchHexString(CharSequence value) {
         return ValueBytes.HEX_STRING_MATCH.matcher(value);
@@ -130,11 +133,11 @@ public static Value buildValue(ResultSet rs, int coltype, int column) throws ESI
                 return ValueBytes.NULL_BYTES;
 
             case TYPE_DATA_TREE:
-                return ValueDataTreeImpl.NULL_DATA_TREE;
+                return NULL_DATA_TREE;
             case TYPE_XML:
-                return ValueDataTree.NULL_XML;
+                return NULL_XML;
             case TYPE_JSON:
-                return ValueDataTree.NULL_JSON;
+                return NULL_JSON;
 
             case TYPE_BYTE:
                 return ValueNumber.NULL_BYTE;
