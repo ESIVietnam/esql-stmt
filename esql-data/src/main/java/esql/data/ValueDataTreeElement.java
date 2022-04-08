@@ -1,8 +1,8 @@
 package esql.data;
 
-import javax.json.JsonException;
-import javax.json.JsonStructure;
-import javax.json.stream.JsonGenerator;
+import jakarta.json.JsonException;
+import jakarta.json.JsonStructure;
+import jakarta.json.stream.JsonGenerator;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
