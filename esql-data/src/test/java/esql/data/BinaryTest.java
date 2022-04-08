@@ -1,4 +1,3 @@
-
 package esql.data;
 
 import org.junit.jupiter.api.Test;
@@ -124,4 +123,3 @@ public class BinaryTest {
         assertEquals("187f", nv.stringValue());
     }
 }
-
