@@ -21,8 +21,8 @@ public class ValueBytes extends Value {
     private final byte[] data;
 
     static final ValueBytes buildBytes(byte... data) {
-        /*if(data == null)
-            ValueNULL.buildNULL(Types.TYPE_BYTES);*/
+        if(data == null)
+            return NULL_BYTES;
         if(data.length==0)
             return EMPTY_BINARY_STRING;
         //deep copy.
