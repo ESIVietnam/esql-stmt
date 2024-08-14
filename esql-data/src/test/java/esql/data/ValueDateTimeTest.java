@@ -48,13 +48,13 @@ public class ValueDateTimeTest {
 			}
 		});
 
-		assertEquals(valueLocalDate.compareTo(valueLocalDate2), 2);
-		assertEquals(valueLocalDate2.compareTo(valueLocalDate), -2);
-		assertEquals(valueLocalDateTime2.compareTo(valueLocalDate), 1);
-		assertEquals(valueLocalDate.compareTo(valueLocalDateTime2), -1);
-		assertEquals(valueLocalDate.compareTo(valueTimestamp), -1);
-		assertEquals(valueLocalDate.compareTo(valueLocalDateTime2), -1);
-		assertEquals(valueLocalDate.compareTo(valueNumber), 1);
+		assertTrue(0 < valueLocalDate.compareTo(valueLocalDate2));
+		assertTrue(0 > valueLocalDate2.compareTo(valueLocalDate));
+		assertTrue(0 < valueLocalDateTime2.compareTo(valueLocalDate));
+		assertTrue(0 > valueLocalDate.compareTo(valueLocalDateTime2));
+		assertTrue(0 > valueLocalDate.compareTo(valueTimestamp));
+		assertTrue(0 > valueLocalDate.compareTo(valueLocalDateTime2));
+		assertTrue(0 < valueLocalDate.compareTo(valueNumber));
 
 
 		/*Test
@@ -82,15 +82,16 @@ public class ValueDateTimeTest {
 
 	@Test
 	public void valueLocalDateTimeTest() {
-		ValueLocalDate valueLocalDate = new ValueLocalDate(LocalDate.now());
+		Instant now = Instant.now();
+		ValueLocalDate valueLocalDate = new ValueLocalDate(now.atZone(ZoneId.systemDefault()).toLocalDate());
 		ValueLocalDate valueLocalDate2 = new ValueLocalDate(LocalDate.of(2020, 11, 20));
 
 
-		ValueLocalDateTime valueLocalDateTime = new ValueLocalDateTime(LocalDateTime.now());
+		ValueLocalDateTime valueLocalDateTime = new ValueLocalDateTime(now.atZone(ZoneId.systemDefault()).toLocalDateTime());
 		ValueLocalDateTime valueLocalDateTime2 = new ValueLocalDateTime(LocalDateTime.of(2020, 12, 20, 10, 30));
 
-		ValueTimestamp valueTimestamp = new ValueTimestamp(Instant.now());
-		ValueTimestampWithTZ valueTimestampWithTZ = new ValueTimestampWithTZ(ZonedDateTime.of(LocalDateTime.now(), ZoneId.of("Asia/Ho_Chi_Minh")));
+		ValueTimestamp valueTimestamp = new ValueTimestamp(now);
+		ValueTimestampWithTZ valueTimestampWithTZ = new ValueTimestampWithTZ(now.atZone(ZoneId.of("Asia/Ho_Chi_Minh")));
 
 
 
@@ -110,11 +111,11 @@ public class ValueDateTimeTest {
 				valueLocalDateTime.compareTo(valueTime);
 			}
 		});
-		assertEquals(valueLocalDateTime.compareTo(valueLocalDate), 1);
-		assertEquals(valueLocalDateTime.compareTo(valueLocalDateTime2), 2);
-		assertEquals(valueLocalDateTime.compareTo(valueTimestamp), 0);
-		assertEquals(valueLocalDateTime.compareTo(valueTimestampWithTZ), -6);
-		assertEquals(valueLocalDateTime.compareTo(valueNumber), 1);
+		assertTrue(0 < valueLocalDateTime.compareTo(valueLocalDate));
+		assertTrue(0 < valueLocalDateTime.compareTo(valueLocalDateTime2));
+		assertTrue(0 == valueLocalDateTime.compareTo(valueTimestamp));
+		assertTrue(0 == valueLocalDateTime.compareTo(valueTimestampWithTZ));
+		assertTrue(0 < valueLocalDateTime.compareTo(valueNumber));
 
 
 
@@ -133,16 +134,17 @@ public class ValueDateTimeTest {
 
 	@Test
 	public void valueTimestampTest() {
-		ValueTimestamp valueTimestamp = new ValueTimestamp(Instant.now());
-		ValueTimestamp valueTimestamp2 = new ValueTimestamp(Instant.now());
+		Instant now = Instant.now();
+		ValueTimestamp valueTimestamp = new ValueTimestamp(now);
+		ValueTimestamp valueTimestamp2 = new ValueTimestamp(now);
 
-		Value valueTime = new ValueLocalTime(LocalTime.now());
+		Value valueTime = new ValueLocalTime(now.atZone(ZoneId.systemDefault()).toLocalTime());
 
 		ValueLocalDate valueLocalDate = new ValueLocalDate(LocalDate.of(2020, 11, 20));
 
 		ValueLocalDateTime valueLocalDateTime = new ValueLocalDateTime(LocalDateTime.of(2020,11, 28, 12, 35));
 
-		ValueTimestampWithTZ valueTimestampWithTZ = new ValueTimestampWithTZ(ZonedDateTime.of(LocalDateTime.now(), ZoneId.of("Asia/Ho_Chi_Minh")));
+		ValueTimestampWithTZ valueTimestampWithTZ = new ValueTimestampWithTZ(now.atZone(ZoneId.of("Asia/Ho_Chi_Minh")));
 
 		Value valueNumber = new ValueNumberLong(5000l);
 
@@ -162,11 +164,11 @@ public class ValueDateTimeTest {
 		});
 
 		assertEquals(valueTimestamp.compareTo(valueTimestamp2),0);
-		assertEquals(valueTimestamp.compareTo(valueLocalDate), 1);
-		assertEquals(valueTimestamp.compareTo(valueLocalDateTime),1);
+		assertTrue(valueTimestamp.compareTo(valueLocalDate) > 0);
+		assertTrue(valueTimestamp.compareTo(valueLocalDateTime) > 0);
 		assertEquals(valueTimestamp.compareTo(valueTimestampWithTZ),0);
-		assertEquals(valueTimestamp.compareTo(valueNumber), 1);
-		assertEquals(valueTimestamp.compareTo(valueString),-6);
+		assertTrue(valueTimestamp.compareTo(valueNumber)>0);
+		assertTrue(valueTimestamp.compareTo(valueString)<0);
 
 
 
@@ -195,11 +197,12 @@ public class ValueDateTimeTest {
 
 	@Test
 	public void valueTimestampWithTZ() {
-		ValueTimestampWithTZ valueTimestampWithTZ = new ValueTimestampWithTZ(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()));
-		ValueTimestampWithTZ valueTimestampWithTZ2 = new ValueTimestampWithTZ(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault()));
+		Instant now = Instant.now();
+		ValueTimestampWithTZ valueTimestampWithTZ = new ValueTimestampWithTZ(now.atZone(ZoneId.systemDefault()));
+		ValueTimestampWithTZ valueTimestampWithTZ2 = new ValueTimestampWithTZ(now.atZone(ZoneId.systemDefault()));
 
 
-		ValueTimestamp valueTimestamp = new ValueTimestamp(Instant.now());
+		ValueTimestamp valueTimestamp = new ValueTimestamp(now);
 
 		ValueLocalDateTime valueLocalDateTime = new ValueLocalDateTime(LocalDateTime.of(2020,11, 28, 12, 35));
 
@@ -213,13 +216,13 @@ public class ValueDateTimeTest {
 		 * compareTo() function
 		 * */
 
-		assertEquals(valueTimestampWithTZ.compareTo(null), 1);
+		assertTrue(valueTimestampWithTZ.compareTo(null) > 0);
 		assertEquals(valueTimestampWithTZ.compareTo(valueTimestampWithTZ2),0);
 		assertEquals(valueTimestampWithTZ.compareTo(valueTimestamp), 0);
-		assertEquals(valueTimestampWithTZ.compareTo(valueLocalDate), 1);
-		assertEquals(valueTimestampWithTZ.compareTo(valueLocalDateTime), 1);
-		assertEquals(valueTimestampWithTZ.compareTo(valueNumber), 1);
-		assertEquals(valueTimestampWithTZ.compareTo(valueString), -6);
+		assertTrue(valueTimestampWithTZ.compareTo(valueLocalDate) > 0);
+		assertTrue(valueTimestampWithTZ.compareTo(valueLocalDateTime) > 0);
+		assertTrue(valueTimestampWithTZ.compareTo(valueNumber) > 0);
+		assertTrue(valueTimestampWithTZ.compareTo(valueString) < 0);
 
 
 		/*Test
@@ -250,10 +253,11 @@ public class ValueDateTimeTest {
 
 	@Test
 	public void valueLocalTimeTest() {
-		ValueLocalTime valueLocalTime = new ValueLocalTime(LocalTime.now());
-		ValueLocalTime valueLocalTime2 = new ValueLocalTime(LocalTime.now());
+		Instant now = Instant.now();
+		ValueLocalTime valueLocalTime = new ValueLocalTime(now.atZone(ZoneId.systemDefault()).toLocalTime());
+		ValueLocalTime valueLocalTime2 = new ValueLocalTime(now.atZone(ZoneId.systemDefault()).toLocalTime());
 
-		ValueLocalDate valueLocalDate = new ValueLocalDate(LocalDate.now());
+		ValueLocalDate valueLocalDate = new ValueLocalDate(now.atZone(ZoneId.systemDefault()).toLocalDate());
 
 		ValueNumber valueNumber = new ValueNumberLong(50000L);
 
@@ -268,8 +272,8 @@ public class ValueDateTimeTest {
 		});
 
 		assertEquals(valueLocalTime.compareTo(valueLocalTime2), 0);
-		assertEquals(valueLocalTime.compareTo(valueNumber), 1);
-		assertEquals(valueLocalTime.compareTo(valueString),-1);
+		assertTrue(valueLocalTime.compareTo(valueNumber)>0);
+		assertTrue(valueLocalTime.compareTo(valueString)<0);
 
 
 		LocalTime value = (LocalTime) valueLocalTime.toTemporal();

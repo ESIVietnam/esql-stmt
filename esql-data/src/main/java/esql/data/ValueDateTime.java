@@ -295,7 +295,7 @@ class ValueLocalDateTime extends ValueDateTime {
             }
             if (b instanceof ChronoZonedDateTime) { //convert to timestamp at local timezone
                 ZonedDateTime a = this.value.atZone(ZoneId.systemDefault());
-                return a.compareTo((ChronoZonedDateTime) b);
+                return a.compareTo(((ChronoZonedDateTime) b).withZoneSameInstant(ZoneId.systemDefault()));
             }
             throw new AssertionError();
         }
