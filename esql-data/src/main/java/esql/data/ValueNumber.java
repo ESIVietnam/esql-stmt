@@ -2,7 +2,6 @@ package esql.data;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class ValueNumber extends Value {
@@ -88,7 +87,7 @@ public abstract class ValueNumber extends Value {
             { DOUBLE_ZERO, DOUBLE_ONE, DOUBLE_TWO, DOUBLE_TEN, }, //10
     };
 
-    private static boolean integerUsingPool = "true".equals(System.getenv("ESQL_INTEGER_USING_POOL"));
+    private static boolean integerUsingPool = "true".equals(System.getProperty("ESQL_INTEGER_USING_POOL", System.getenv("ESQL_INTEGER_USING_POOL")));
 
     private static final int typeToIndex(Types type) {
         int i = -1;
@@ -125,6 +124,8 @@ public abstract class ValueNumber extends Value {
                 break;
             case TYPE_DOUBLE:
                 i = 10;
+                break;
+            default:
                 break;
         }
         return i;
@@ -187,8 +188,8 @@ public abstract class ValueNumber extends Value {
     }
 
     static Value buildNumber(Types type, double num) {
-        if(!Types.isNumber(type))
-            throw new IllegalArgumentException("type \""+type+"\" is not number");
+        if(!Types.isNumber(type) && !Types.TYPE_BOOLEAN.equals(type))
+            throw new IllegalArgumentException("type \""+type+"\" is not number / number convertible");
 
         ValueNumber v = useStaticValue(type, num);
         if(v != null)
@@ -210,7 +211,7 @@ public abstract class ValueNumber extends Value {
             case TYPE_LONG:
                 return new ValueNumberLong((long) num);
             case TYPE_ULONG:
-                return new ValueNumberObject(type, new BigInteger(String.valueOf(num)));
+                return new ValueNumberObject(type, new BigDecimal(String.valueOf(num)).toBigInteger());
             case TYPE_DECIMAL:
                 return new ValueNumberObject(type, BigDecimal.valueOf(num));
             case TYPE_FLOAT:
@@ -224,8 +225,8 @@ public abstract class ValueNumber extends Value {
     }
 
     static Value buildNumber(Types type, long num) {
-        if(!Types.isNumber(type))
-            throw new IllegalArgumentException("type \""+type+"\" is not number");
+        if(!Types.isNumber(type) && !Types.TYPE_BOOLEAN.equals(type))
+            throw new IllegalArgumentException("type \""+type+"\" is not number / number convertible");
 
         ValueNumber v = useStaticValue(type, num);
         if(v != null)
@@ -476,7 +477,7 @@ final class ValueNumberObject extends ValueNumber {
                     this.number = number.doubleValue();
                 break;
             default:
-                assert (true):"Should not use for other";
+                //assert (false):"Should not use for other type";
                 this.number = number;
         }
 

@@ -7,7 +7,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 import static esql.data.Types.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 @TestMethodOrder(MethodOrderer.MethodName.class)
 public class StringValueTest {

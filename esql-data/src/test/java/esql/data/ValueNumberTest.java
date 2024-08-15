@@ -19,6 +19,31 @@ public class ValueNumberTest {
 
 
 		//------------------------buildNumber(Types type, double num)--------------------------------------
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (double) 0), new ValueNumberInt(Types.TYPE_INT,(int) 0));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (double) 0), new ValueNumberInt(Types.TYPE_LONG,(int) 0));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (long) 0), new ValueNumberInt(Types.TYPE_INT,(int) 0));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (long) 0), new ValueNumberInt(Types.TYPE_INT,(int) 0));
+
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (double) 1), new ValueNumberInt(Types.TYPE_INT,(int) 1));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (double) 1), new ValueNumberInt(Types.TYPE_LONG,(int) 1));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (long) 1), new ValueNumberInt(Types.TYPE_INT,(int) 1));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (long) 1), new ValueNumberInt(Types.TYPE_INT,(int) 1));
+
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (double) 2), new ValueNumberInt(Types.TYPE_INT,(int) 2));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (double) 2), new ValueNumberInt(Types.TYPE_LONG,(int) 2));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (long) 2), new ValueNumberInt(Types.TYPE_INT,(int) 2));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (long) 2), new ValueNumberInt(Types.TYPE_INT,(int) 2));
+
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (double) 10), new ValueNumberInt(Types.TYPE_INT,(int) 10));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (double) 10), new ValueNumberInt(Types.TYPE_LONG,(int) 10));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (long) 10), new ValueNumberInt(Types.TYPE_INT,(int) 10));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (long) 10), new ValueNumberInt(Types.TYPE_INT,(int) 10));
+
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (double) 0), new ValueNumberInt(Types.TYPE_INT,(int) 0));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (double) 0), new ValueNumberInt(Types.TYPE_LONG,(int) 0));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (long) 0), new ValueNumberInt(Types.TYPE_INT,(int) 0));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (long) 0), new ValueNumberInt(Types.TYPE_INT,(int) 0));
+
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (double) 3000), new ValueNumberInt(Types.TYPE_INT,(int) 3000));
 
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_UBYTE, (double) 3000), new ValueNumberInt(Types.TYPE_UBYTE,(int) 3000));
@@ -33,18 +58,11 @@ public class ValueNumberTest {
 
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_UINT, (double) 3000), new ValueNumberUInt((long) 3000));
 
-		
+		ValueNumberUInt uintValue = new ValueNumberUInt((long) 3000);
+		assertEquals(Types.TYPE_UINT, uintValue.getType());
+
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (double) 3000), new ValueNumberLong((long) 3000));
 //		assertEquals(ValueNumber.buildNumber(Types.TYPE_ULONG, (double) 3000),new ValueNumberObject(Types.TYPE_ULONG, new BigInteger(String.valueOf(3000))));
-		assertThrows(NumberFormatException.class, new Executable() {
-
-			@Override
-			public void execute() throws Throwable {
-				ValueNumber.buildNumber(Types.TYPE_ULONG, (double) 3000);
-				
-			}
-		});
-
 
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_DECIMAL, (double) 3000), new ValueNumberObject(Types.TYPE_DECIMAL, BigDecimal.valueOf((double)3000)));
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_FLOAT, (double) 3000),new ValueNumberObject(Types.TYPE_FLOAT, Float.valueOf((float) 3000)));
@@ -53,7 +71,7 @@ public class ValueNumberTest {
 
 			@Override
 			public void execute() throws Throwable {
-				ValueNumber.buildNumber(Types.TYPE_BOOLEAN, (double) 3000);
+				ValueNumber.buildNumber(Types.TYPE_BYTES, (double) 3000);
 
 			}
 		});
@@ -83,7 +101,7 @@ public class ValueNumberTest {
 
 			@Override
 			public void execute() throws Throwable {
-				ValueNumber.buildNumber(Types.TYPE_BOOLEAN, (long) 3000);
+				ValueNumber.buildNumber(Types.TYPE_DATE, (long) 3000);
 
 			}
 		});
@@ -92,22 +110,71 @@ public class ValueNumberTest {
 
 		//--------------------------------------buildNumber(Types type, BigDecimal num)--------------------------------------------------------
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (BigDecimal) null), Value.nullOf(Types.TYPE_INT));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, new BigDecimal("30000")),  new ValueNumberObject(Types.TYPE_INT, new BigDecimal("30000").unscaledValue()));
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_ULONG, new BigDecimal("30000")),  new ValueNumberObject(Types.TYPE_ULONG, new BigDecimal("30000").unscaledValue()));
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_DECIMAL, new BigDecimal("30000")),  new ValueNumberObject(Types.TYPE_DECIMAL, new BigDecimal("30000")));
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_BOOLEAN, new BigDecimal("30000")), ValueBoolean.buildBoolean(!new BigDecimal("30000").equals(BigDecimal.ZERO)));
-
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_DOUBLE, new BigDecimal("30000")),  new ValueNumberObject(Types.TYPE_DOUBLE, new BigDecimal("30000")));
 
 		//buildNumber(Types type, BigInteger num)
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (BigInteger) null), Value.nullOf(Types.TYPE_INT));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, new BigInteger("30000")),  new ValueNumberObject(Types.TYPE_INT, new BigInteger("30000")));
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_ULONG, new BigInteger("30000")),  new ValueNumberObject(Types.TYPE_ULONG, new BigInteger("30000")));
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_DECIMAL, new BigInteger("30000")),  new ValueNumberObject(Types.TYPE_DECIMAL, new BigInteger("30000")));
 		assertEquals(ValueNumber.buildNumber(Types.TYPE_BOOLEAN, new BigInteger("30000")), ValueBoolean.buildBoolean(!new BigInteger("30000").equals(BigInteger.ZERO)));
 
 
+	}
 
+	@Test
+	public void valueNumberTestPool() {
+		System.setProperty("ESQL_INTEGER_USING_POOL", "true");
 
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_BOOLEAN, 1), ValueBoolean.buildBoolean(true));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_BOOLEAN, (double) 0), ValueBoolean.buildBoolean(false));
 
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_BYTE, 1), ValueNumberInt.buildNumber(Types.TYPE_INT, 1));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_BYTE, 0), ValueNumberInt.buildNumber(Types.TYPE_INT, 0));
 
+		//------------------------buildNumber(Types type, double num)--------------------------------------
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (double) 0), new ValueNumberInt(Types.TYPE_INT,(int) 0));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (double) 0), new ValueNumberInt(Types.TYPE_LONG,(int) 0));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (long) 0), new ValueNumberInt(Types.TYPE_INT,(int) 0));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (long) 0), new ValueNumberInt(Types.TYPE_INT,(int) 0));
+
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (double) 1), new ValueNumberInt(Types.TYPE_INT,(int) 1));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (double) 1), new ValueNumberInt(Types.TYPE_LONG,(int) 1));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (long) 1), new ValueNumberInt(Types.TYPE_INT,(int) 1));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (long) 1), new ValueNumberInt(Types.TYPE_INT,(int) 1));
+
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (double) 2), new ValueNumberInt(Types.TYPE_INT,(int) 2));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (double) 2), new ValueNumberInt(Types.TYPE_LONG,(int) 2));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (long) 2), new ValueNumberInt(Types.TYPE_INT,(int) 2));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (long) 2), new ValueNumberInt(Types.TYPE_INT,(int) 2));
+
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (double) 10), new ValueNumberInt(Types.TYPE_INT,(int) 10));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (double) 10), new ValueNumberInt(Types.TYPE_LONG,(int) 10));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_INT, (long) 10), new ValueNumberInt(Types.TYPE_INT,(int) 10));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_LONG, (long) 10), new ValueNumberInt(Types.TYPE_INT,(int) 10));
+
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_DECIMAL, (double) 1), new ValueNumberInt(Types.TYPE_DECIMAL,(int) 1));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_ULONG, (double) 1), new ValueNumberInt(Types.TYPE_ULONG,(int) 1));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_DECIMAL, (long) 1), new ValueNumberInt(Types.TYPE_DECIMAL,(int) 1));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_ULONG, (long) 1), new ValueNumberInt(Types.TYPE_ULONG,(int) 1));
+
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_DECIMAL, (double) 2), new ValueNumberInt(Types.TYPE_DECIMAL,(int) 2));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_ULONG, (double) 2), new ValueNumberInt(Types.TYPE_ULONG,(int) 2));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_DECIMAL, (long) 2), new ValueNumberInt(Types.TYPE_DECIMAL,(int) 2));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_ULONG, (long) 2), new ValueNumberInt(Types.TYPE_ULONG,(int) 2));
+
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_DECIMAL, BigDecimal.valueOf(2)), new ValueNumberInt(Types.TYPE_DECIMAL,(int) 2));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_DECIMAL, BigInteger.valueOf(2)), new ValueNumberInt(Types.TYPE_DECIMAL,(int) 2));
+
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_DECIMAL, BigDecimal.valueOf(10)), new ValueNumberInt(Types.TYPE_DECIMAL,(int) 10));
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_DECIMAL, BigInteger.valueOf(10)), new ValueNumberInt(Types.TYPE_DECIMAL,(int) 10));
+
+		assertEquals(ValueNumber.buildNumber(Types.TYPE_ULONG, (double) 99), new ValueNumberInt(Types.TYPE_ULONG,(int) 99));
+		System.setProperty("ESQL_INTEGER_USING_POOL", "false");
 	}
 
 	@Test

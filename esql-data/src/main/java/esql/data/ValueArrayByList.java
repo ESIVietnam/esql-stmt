@@ -3,7 +3,7 @@ package esql.data;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ValueArrayByList extends ValueArray {
+class ValueArrayByList extends ValueArray {
     private final Types type;
     private final List<Value> list;
 
@@ -63,7 +63,7 @@ public class ValueArrayByList extends ValueArray {
 
     @Override
     public boolean containsAll(Collection<?> c) {
-        return list.contains(c);
+        return list.containsAll(c);
     }
 
     @Override
