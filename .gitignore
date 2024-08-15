@@ -42,3 +42,4 @@ bin/
 .factorypath
 
 effective-pom.xml
+.vscode/
