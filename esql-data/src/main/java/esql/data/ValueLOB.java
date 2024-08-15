@@ -107,10 +107,11 @@ public abstract class ValueLOB extends Value implements Closeable {
             int c = Long.compareUnsigned(this.size(), ((ValueLOB) o).size());
             if(c != 0)
                 return c;
+            //comparing LOBs by comparing its hash.
             if(preHash.length > 0 && ((ValueLOB) o).preHash.length > 0) { //compare hashed
-                for(int algos = 0;algos < HASHES.length; algos++) {
+                for(int algos = HASHES.length - 1; algos >= 0; algos--) {
                     if(preHash.length <= algos+1 || ((ValueLOB) o).preHash.length <= algos+1)
-                        break;
+                        continue;
                     byte[] h1 = preHash[algos];
                     byte[] h2 = ((ValueLOB) o).preHash[algos];
                     if(h1 != null && h2 != null)
@@ -183,6 +184,16 @@ public abstract class ValueLOB extends Value implements Closeable {
         if(preHash.length < algo+1 || preHash[algo] == null)
             return null;
         return Arrays.copyOf(preHash[algo], preHash[algo].length);
+    }
+
+    public int getStrongestAlgorithmAvailableHash() {
+        int g = HASHES.length-1;
+        while (g >= 0) {
+            if(g < preHash.length - 1 && preHash[g] != null)
+               break;
+            g--;
+        }
+        return g;
     }
 
     /**
