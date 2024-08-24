@@ -1,11 +1,5 @@
 package esql.data;
 
-import jakarta.json.JsonException;
-import jakarta.json.JsonStructure;
-import jakarta.json.stream.JsonGenerator;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -40,12 +34,45 @@ public interface ValueDataTreeElement {
     Object getObject();
 
     /**
-     * this element is scalar (nor tree neither list)
+     * this element is scalar (not tree neither list neither LOB)
      *
      * @return true if isScalar
      */
     boolean isScalar();
 
+    /**
+     * this value is null
+     * @return
+     */
+    public boolean isNull();
+
+    /**
+     * detect for special character to force escape
+     *
+     * {, }, [, ], ,, &, :, *, #, ?, |. -, <. >, =, !, %, @, \.
+     *
+     * @return true it has at least one
+     */
+    public boolean isNeedEscape();
+
+    /**
+     * need quoted, for example empty string or space inside
+     *
+     * @return
+     */
+    public boolean isNeedQuote();
+    /**
+     * this value is multi lines printing (string with line break)
+     * @return true if multi lines
+     */
+    public boolean isMultiLines();
+
+    /**
+     * check for last char is new line character (for YAML)
+     *
+     * @return
+     */
+    public boolean isNewLineAtLast();
     /**
      * Element as Map of key => child element (if capable, throw IllegalStateException)
      *
@@ -62,9 +89,28 @@ public interface ValueDataTreeElement {
      */
     public List<ValueDataTreeElement> getList();
 
-    public void writeAsJSONValue(JsonGenerator generator) throws JsonException;
-    public void writeAsJSONPair(JsonGenerator generator, Key name) throws JsonException;
+    /**
+     * get Quoted "" string with escape character
+     * @return
+     */
+    public CharSequence getQuotedString();
 
-    public void writeAsXML(XMLStreamWriter writer, Key name) throws XMLStreamException;
-    public void writeAsXML(String namespaceURI, XMLStreamWriter writer, Key name) throws XMLStreamException;
+    /**
+     * get series (iterator) of CharSequence. Only capable for scalar or LOB.
+     *
+     * each char sequence is a text line or break lines if the text's length is over the maxLength.
+     * if maxLength is -1, there no line breaking by length.
+     *
+     * Special characters may return (no escape yet).
+     *
+     * If value is null, the method return empty iterator.
+     * Otherwise this method is always return at least one element.
+     *
+     * @param maxLength the maximum length of a line (-1 if unlimited)
+     * @return iterator
+     * @throws IllegalStateException when can not iterate the value.
+     */
+    public Iterable<CharSequence> getLineIterator(int maxLength);
+
+
 }

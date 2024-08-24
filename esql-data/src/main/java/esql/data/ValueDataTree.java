@@ -1,12 +1,9 @@
 package esql.data;
 
 import jakarta.json.JsonException;
-import jakarta.json.JsonWriter;
 import jakarta.json.stream.JsonGenerator;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import javax.xml.transform.Result;
-import javax.xml.transform.dom.DOMResult;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -29,8 +26,37 @@ import java.util.*;
  */
 public abstract class ValueDataTree extends Value implements Map<Key, ValueDataTreeElement> {
 
+    public static final int DATA_TREE_MAXIMUM_LEVELS = 128;
     public static final ValueNULL NULL_XML = new ValueNULL(Types.TYPE_XML);
     public static final ValueNULL NULL_JSON = new ValueNULL(Types.TYPE_JSON);
+
+    public static final int detectSpecialChars(CharSequence cs) {
+        //"{, }, [, ], ,, &, :, *, #, ?, |. -, <. >, =, !, %, @, \."
+        for(int i = 0; i < cs.length(); i++) {
+            switch (cs.charAt(i)) {
+                case '{':
+                case '}':
+                case '[':
+                case ']':
+                case ',':
+                case '&':
+                case ':':
+                case '*':
+                case '#':
+                case '?':
+                case '|':
+                case '-':
+                case '<':
+                case '>':
+                case '=':
+                case '!':
+                case '%':
+                case '@':
+                    return i;
+            }
+        }
+        return -1;
+    }
 
     public abstract static class TreeBuilder implements Iterable<Key> {
         //protected tree builder
@@ -157,7 +183,19 @@ public abstract class ValueDataTree extends Value implements Map<Key, ValueDataT
          */
         public abstract TreeBuilder putList(Key key, ListBuilder listBuilder);
 
+        /**
+         * build complete Value
+         *
+         * @return new value
+         */
         public abstract ValueDataTree build();
+
+        /**
+         * build a tree but it is element of another tree/list
+         *
+         * @return new tree element
+         */
+        public abstract ValueDataTreeElement buildTreeElement();
     }
 
     /**
@@ -165,9 +203,54 @@ public abstract class ValueDataTree extends Value implements Map<Key, ValueDataT
      * Despite it's name, it is a collection.
      */
     public abstract static class ListBuilder implements Iterable<ValueDataTreeElement> {
+
+        /**
+         * add all element of another collection
+         * @param elements to add
+         * @return
+         */
         public abstract ListBuilder addAll(Collection<ValueDataTreeElement> elements);
+
+        /**
+         * add one or more elements.
+         *
+         * @param element or multiple element to add
+         * @return
+         */
         public abstract ListBuilder addElement(ValueDataTreeElement... element);
-        abstract ValueDataTreeElement buildListElement();
+
+        /**
+         * add list builders, that create element when building at the whole.
+         *
+         * @param builders to add
+         * @return
+         */
+        public abstract ListBuilder addElement(ListBuilder... builders);
+
+        /**
+         * add tree builders, that create element when building at the whole
+         * @param builders to add
+         * @return
+         */
+        public abstract ListBuilder addElement(TreeBuilder... builders);
+
+        /**
+         * create a list builder then adding to the end of list.
+         * @return
+         */
+        public abstract ListBuilder createListBuilder();
+
+        /**
+         * create a tree builder then adding to the end of list.
+         * @return
+         */
+        public abstract TreeBuilder createTreeBuilder();
+
+        /**
+         * Build the tree element (to add as one element of the parent data tree)
+         * @return new DataTree (of List type)
+         */
+        public abstract ValueDataTreeElement buildListElement();
     }
 
     public static final ValueDataTree nullOfDataTree() {
@@ -178,12 +261,40 @@ public abstract class ValueDataTree extends Value implements Map<Key, ValueDataT
         return new ValueDataTreeImpl.TreeBuilderImpl();
     }
 
-    public abstract boolean isJSONNative();
+    /**
+     * checking if it could write as YAML tree
+     * @return true if it can
+     */
+    public abstract boolean isYAMLWritable();
+
+    /**
+     * writing the DataTree as YAML (if applicable).
+     * JSON and XML will be converted into YAML.
+     *
+     * @param output the output stream to write to (UTF-8)
+     * @throws IOException
+     */
+    public abstract void writeAsYAML(OutputStream output) throws IOException;
+
+    /**
+     * writing the DataTree as YAML (if applicable).
+     * JSON and XML will be converted into YAML.
+     *
+     * @param writer the writer to write to (as characters)
+     * @throws IOException
+     */
+    public abstract void writeAsYAML(Writer writer) throws IOException;
+
+    /**
+     * check if it can write to JSON.
+     * @return true if JSON writable
+     */
+    public abstract boolean isJSONWritable();
     public abstract void writeAsJSON(OutputStream output) throws IOException;
     public abstract void writeAsJSON(Writer writer) throws IOException;
     public abstract void writeAsJSON(JsonGenerator generator) throws JsonException;
 
-    public abstract boolean isXMLNative();
+    public abstract boolean isXMLWritable();
     public abstract void writeAsXML(String namespaceURI, String rootElementName, OutputStream output) throws IOException;
     public void writeAsXML(String rootElementName, OutputStream output) throws IOException {
         writeAsXML(null, rootElementName, output);
