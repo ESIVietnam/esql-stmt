@@ -63,6 +63,7 @@ public class ValueString extends Value {
     public boolean isTrue() {
         return !isEmpty();
     }
+    
 
     @Override
     public Value convertTo(Types type) {
@@ -133,10 +134,13 @@ public class ValueString extends Value {
             case TYPE_BOOLEAN:
                 return ValueBoolean.buildBoolean(!this.value.isEmpty());
             case TYPE_DATA_TREE:
+                //TODO: implement sau
                 break;
             case TYPE_XML:
+                //TODO: implement sau
                 break;
             case TYPE_JSON:
+                //TODO: implement sau
                 break;
             case TYPE_CLOB:
             case TYPE_NCLOB:
@@ -162,6 +166,8 @@ public class ValueString extends Value {
                 if(bm.matches())
                     return ValueBytes.buildBytes(ValueBytes.hexToBytes(this.value));
                 throw new NumberFormatException("not a hex string");
+            default:
+                break;
         }
         throw new IllegalArgumentException("can not convert from string to "+type.getAbbreviation());
         //return null;

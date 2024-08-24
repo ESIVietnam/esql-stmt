@@ -10,7 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 public class ValueCLOBCreator  implements Closeable {
     private final boolean national;
@@ -29,7 +28,7 @@ public class ValueCLOBCreator  implements Closeable {
             for(int i=0;i < hashAlgorithms.length;i++) {
                 try {
                     hashAlgos[i] = hashAlgorithms[i];
-                    hasher[i] = MessageDigest.getInstance(ValueLOB.HASHES[hashAlgorithms[i]]);
+                    hasher[i] = ValueLOB.messageDigestFromAlgorithm(hashAlgorithms[i]);
                 } catch (NoSuchAlgorithmException e) {
                     throw new AssertionError();
                 }

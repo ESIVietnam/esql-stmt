@@ -1,9 +1,11 @@
 package esql.data;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
@@ -21,8 +23,8 @@ public class ValueBytes extends Value {
     private final byte[] data;
 
     static final ValueBytes buildBytes(byte... data) {
-        /*if(data == null)
-            ValueNULL.buildNULL(Types.TYPE_BYTES);*/
+        if(data == null)
+            return NULL_BYTES;
         if(data.length==0)
             return EMPTY_BINARY_STRING;
         //deep copy.
@@ -82,6 +84,8 @@ public class ValueBytes extends Value {
             case TYPE_STRING:
             case TYPE_NSTRING:
                 return ValueString.buildString(type, bytesToHex(this.data));
+            default:
+                break;
         }
         throw new IllegalArgumentException("can not convert from bytes to "+type.getAbbreviation());
     }
@@ -117,9 +121,32 @@ public class ValueBytes extends Value {
             return data.length > ((ValueArray) o).size() ? 1 : data.length < ((ValueArray) o).size() ? -1 : 0;
         }
         //compare hex string
-        if (o instanceof ValueString)
+        if (o instanceof ValueString) {
             return Arrays.compare(data,
                     hexToBytes(o.stringValue()));
+        }
+
+        //comparing byte by byte
+        if(o instanceof ValueLOB) {
+            try(InputStream input = ((ValueLOB)o).getInputStream()) {
+                //allocate same buffer array to read all in.
+                byte[] buff = new byte[data.length];
+                int n = input.read(buff);
+                int c = -1;
+                if(n > 0) {
+                    c = Arrays.compare(data, Arrays.copyOf(buff , n));
+                }
+                if(c == 0) {
+                    if(((ValueLOB)o).size() > Integer.MAX_VALUE)
+                        return -1;
+                    return (int) ((long)length() - ((ValueLOB)o).size());
+                }
+                return c;
+            }
+            catch(IOException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
         //can not compare, always -1
         return -1;
     }
@@ -140,16 +167,35 @@ public class ValueBytes extends Value {
                 return false;
             Iterator<Value> oit = ((ValueArray) obj).iterator();
             int not_match = IntStream.range(0, Math.min(data.length,((ValueArray) obj).size()))
-                    .filter(i -> oit.hasNext() ? !oit.next().equals(data[i]) : true )
+                    .filter(i -> oit.hasNext() ? !oit.next().equals(ValueNumberInt.valueOf(data[i])) : true )
                     .findFirst().orElse(-1);
             return not_match < 0 && data.length == ((ValueArray) obj).size();
         }
         //compare hexa string
-        if (obj instanceof ValueString)
+        if (obj instanceof ValueString) {
             return (!((Value) obj).isArray() && ((ValueString) obj).isEmpty() && this.isEmpty())
                     || (!((ValueString) obj).isEmpty() && !this.isEmpty()
                         && Arrays.equals(data,
                     hexToBytes(((ValueString) obj).stringValue())));
+        }
+        //compare by hash
+        if (obj instanceof ValueLOB) {
+            int g = ((ValueLOB)obj).getStrongestAlgorithmAvailableHash();
+            try {
+                if(g >= 0) {
+                    byte[] h = ((ValueLOB)obj).getHash(g);
+                    MessageDigest md = ValueLOB.messageDigestFromAlgorithm(g);
+                    return Arrays.equals(md.digest(this.data), h);
+                }
+                else {
+                    byte[] h = ((ValueLOB)obj).forceHash(ValueLOB.DEFAULT_HASH_ALGO);
+                    MessageDigest md = ValueLOB.messageDigestFromAlgorithm(ValueLOB.DEFAULT_HASH_ALGO);
+                    return Arrays.equals(md.digest(this.data), h);
+                }
+            } catch (NoSuchAlgorithmException | IOException e) {
+                throw new IllegalStateException(e);
+            }
+        }
         if (obj instanceof Value) //other, false
             return false;
         //compare primitive
