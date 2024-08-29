@@ -1,0 +1,15 @@
+version: 0.1
+
+phases:
+  build:
+    commands:
+      - echo Build started on `date`
+      - mvn test
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - mvn package -DskipTests
+artifacts:
+  files:
+    - esql-data/target/esql-data-4.0.0.jar
+    - esql-stmt-dict/target/sqlstmt3-4.0.0.jar
