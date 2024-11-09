@@ -3,9 +3,9 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>vn.esi.framework</groupId>
+  <groupId>esi.framework</groupId>
   <artifactId>esql-stmt</artifactId>
-  <version>4.0.0</version>
+  <version>4.0.0-SNAPSHOT</version>
 
   <name>esql-stmt</name>
   <url>https://github.com/ESIVietnam/esql-stmt</url>
@@ -15,16 +15,39 @@
     <module>esql-stmt-dict</module>
   </modules>
   <properties>
-    <esql-stmt.version>4.0.0</esql-stmt.version>
+    <esql-stmt.version>4.0.0-SNAPSHOT</esql-stmt.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
   </properties>
 
+    <repositories>
+        <!-- ESI Public/Development Maven Repository (bundled in the WebSite) -->
+        <repository>
+            <id>esi-epfs-repo</id>
+            <url>https://esi.vn/ep/epfs/maven</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>github-esql-stmt</id>
+            <name>GitHub ESIVietnam esql-stmt</name>
+            <url>https://maven.pkg.github.com/ESIVietnam/esql-stmt</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
   <distributionManagement>
     <repository>
-      <id>esi-epfs-repo</id>
-      <url>https://esi.vn/ep-master/epfs/maven</url>
+      <id>github-esql-stmt</id>
+      <name>GitHub ESIVietnam esql-stmt</name>
+      <url>https://maven.pkg.github.com/ESIVietnam/esql-stmt</url>
     </repository>
   </distributionManagement>
 

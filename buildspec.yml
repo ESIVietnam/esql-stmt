@@ -8,8 +8,8 @@ phases:
   post_build:
     commands:
       - echo Build completed on `date`
-      - mvn package -DskipTests
+      - mvn --update-snapshots -DskipTests packages deploy
 artifacts:
   files:
-    - esql-data/target/esql-data-4.0.0.jar
-    - esql-stmt-dict/target/sqlstmt3-4.0.0.jar
+    - esql-data/target/esql-data-4.0.0-*.jar
+    - esql-stmt-dict/target/sqlstmt3-4.0.0-*.jar

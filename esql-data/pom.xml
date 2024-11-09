@@ -5,9 +5,9 @@
   <packaging>jar</packaging> 
   <name>ESQL-Stmt Data and Value classes</name>
   <parent>
-    <groupId>vn.esi.framework</groupId>
+    <groupId>esi.framework</groupId>
     <artifactId>esql-stmt</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.0-SNAPSHOT</version>
   </parent>
   <dependencies>
       <!-- https://mvnrepository.com/artifact/jakarta.json/jakarta.json-api -->

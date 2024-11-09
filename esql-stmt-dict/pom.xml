@@ -6,9 +6,9 @@
   <name>ESQL-Stmt Statement definition management and runtime</name>
   <!-- url>http://maven.apache.org</url -->
   <parent>
-    <groupId>vn.esi.framework</groupId>
+    <groupId>esi.framework</groupId>
     <artifactId>esql-stmt</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.0-SNAPSHOT</version>
   </parent>
   <dependencies>
 
