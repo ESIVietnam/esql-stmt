@@ -13,8 +13,11 @@ import java.util.stream.IntStream;
 public abstract class ValueArray extends Value implements List<Value> {
 
     public static final String ARRAY_PREFIX = Optional.ofNullable(System.getenv("ESQL_ARRAY_PREFIX")).orElse("[");
+    public static final char[] ARRAY_PREFIX_CHARSEQ = ARRAY_PREFIX.toCharArray();
     public static final String ARRAY_POSTFIX = Optional.ofNullable(System.getenv("ESQL_ARRAY_POSTFIX")).orElse("]");
+    public static final char[] ARRAY_POSTFIX_CHARSEQ = ARRAY_POSTFIX.toCharArray();
     public static final String ARRAY_SEPARATOR = Optional.ofNullable(System.getenv("ESQL_ARRAY_SEPARATOR")).orElse(",");
+    public static final char[] ARRAY_SEPARATOR_CHARSEQ = ARRAY_SEPARATOR.toCharArray();
 
     public static final ValueArray NULL_STRING_ARRAY = new ValueArrayNULLEmpty(Types.TYPE_STRING, true);
     public static final ValueArray NULL_NSTRING_ARRAY = new ValueArrayNULLEmpty(Types.TYPE_NSTRING, true);

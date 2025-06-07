@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParsePosition;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -96,23 +97,40 @@ public class ValueString extends Value {
             case TYPE_UINT:
             case TYPE_LONG:
                 {//as integer types
-                    var m1 = Value.matchIntegerString(this.value);
-                    if (m1.matches())
-                        return ValueNumber.buildNumber(type, Long.parseLong(this.value));
-                    var m2 = Value.matchDecimalString(this.value);
-                    if (m2.matches())
-                        return ValueNumber.buildNumber(type, Long.parseLong(m2.group(1))); //first group
+                    var start = new ParsePosition(0);
+                    var decimalPos = new ParsePosition(0);
+                    var end = new ParsePosition(this.value.length());
+                    if(Value.isIntegerString(this.value, start, end)) {
+                        return ValueNumber.buildNumber(type, Long.parseLong(
+                                this.value.substring(start.getIndex(), end.getIndex())
+                        ));
+                    }
+                    //try decimal
+                    else if(Value.isDecimalString(this.value, start, decimalPos, end)) {
+                        //decimal string
+                        return ValueNumber.buildNumber(type, Long.parseLong(
+                                this.value.substring(start.getIndex(), decimalPos.getIndex())
+                        )); //first group
+                    }
                 }
                 throw new NumberFormatException("NaN");
             case TYPE_ULONG:
                 {
-                    var m1 = Value.matchIntegerString(this.value);
-                    if(m1.matches())
-                        return ValueNumber.buildNumber(type, new BigInteger(this.value));
-                    var m2 = Value.matchDecimalString(this.value);
-                    if(m2.matches())
-                        return ValueNumber.buildNumber(type, new BigInteger(m2.group(1))); //first group
-
+                    var start = new ParsePosition(0);
+                    var decimalPos = new ParsePosition(0);
+                    var end = new ParsePosition(this.value.length());
+                    if(Value.isIntegerString(this.value, start, end)) {
+                        return ValueNumber.buildNumber(type, new BigInteger(
+                                this.value.substring(start.getIndex(), end.getIndex())
+                        ));
+                    }
+                    //try decimal
+                    else if(Value.isDecimalString(this.value, start, decimalPos, end)) {
+                        //decimal string
+                        return ValueNumber.buildNumber(type, new BigInteger(
+                                this.value.substring(start.getIndex(), decimalPos.getIndex())
+                        )); //first group
+                    }
                 }
                 throw new NumberFormatException("NaN");
             case TYPE_DECIMAL:
@@ -133,10 +151,13 @@ public class ValueString extends Value {
             case TYPE_BOOLEAN:
                 return ValueBoolean.buildBoolean(!this.value.isEmpty());
             case TYPE_DATA_TREE:
+                //TODO: implement sau
                 break;
             case TYPE_XML:
+                //TODO: implement sau
                 break;
             case TYPE_JSON:
+                //TODO: implement sau
                 break;
             case TYPE_CLOB:
             case TYPE_NCLOB:
@@ -148,7 +169,7 @@ public class ValueString extends Value {
             case TYPE_BLOB:
                 //base64 convert?
                 try {
-                    if(Value.isBase64String(this.value)) {
+                    if(Value.matchBase64String(this.value, false)) {
                         var decoder = Base64.getDecoder();
                         var buff = decoder.decode(this.value);
                         return ValueBLOB.wrap(buff, buff.length);
@@ -158,10 +179,17 @@ public class ValueString extends Value {
                 }
                 return Value.nullOf(type);
             case TYPE_BYTES:
-                var bm = Value.matchHexString(this.value);
-                if(bm.matches())
-                    return ValueBytes.buildBytes(ValueBytes.hexToBytes(this.value));
+                //var bm = Value.matchHexString(this.value);
+                var start = new ParsePosition(0);
+                var end = new ParsePosition(this.value.length());
+                if(Value.isHexString(this.value, start, end)) {
+                    return ValueBytes.buildBytes(
+                            ValueBytes.hexToBytes(this.value, start.getIndex(), end.getIndex())
+                    );
+                }
                 throw new NumberFormatException("not a hex string");
+            default:
+                break;
         }
         throw new IllegalArgumentException("can not convert from string to "+type.getAbbreviation());
         //return null;

@@ -110,7 +110,7 @@ public abstract class ValueDateTime  extends Value {
         if (obj instanceof ValueDateTime)
             return this.toTemporal().equals(((ValueDateTime) obj).toTemporal());
         if (obj instanceof Value)
-            return !((Value) obj).isNull() && this.toTemporal().equals(((Value) obj).stringValue());
+            return !((Value) obj).isNull() && this.toTemporal().toString().equals(((Value) obj).stringValue());
         //compare primitive
         return this.toTemporal().equals(obj);
     }
@@ -190,6 +190,7 @@ class ValueLocalDate extends ValueDateTime {
         return "(ValueLocalDate)"+this.value;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public int compareTo(Value o) {
         if(o == null || o.isEmpty())
@@ -276,6 +277,7 @@ class ValueLocalDateTime extends ValueDateTime {
         return value;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public int compareTo(Value o) {
         if(o == null || o.isEmpty())
@@ -295,7 +297,7 @@ class ValueLocalDateTime extends ValueDateTime {
             }
             if (b instanceof ChronoZonedDateTime) { //convert to timestamp at local timezone
                 ZonedDateTime a = this.value.atZone(ZoneId.systemDefault());
-                return a.compareTo((ChronoZonedDateTime) b);
+                return a.compareTo(((ChronoZonedDateTime) b).withZoneSameInstant(ZoneId.systemDefault()));
             }
             throw new AssertionError();
         }
@@ -361,6 +363,7 @@ class ValueTimestamp extends ValueDateTime {
         return value;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public int compareTo(Value o) {
         if(o == null || o.isEmpty())
@@ -441,6 +444,7 @@ class ValueTimestampWithTZ extends ValueDateTime {
         return value;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public int compareTo(Value o) {
         if(o == null || o.isEmpty())

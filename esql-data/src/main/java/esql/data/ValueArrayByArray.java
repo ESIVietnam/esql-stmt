@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
 /**
  * Unmodifiable version of ValueArray, implemented as an internal array storage.
  */
-public class ValueArrayByArray extends ValueArray {
+class ValueArrayByArray extends ValueArray {
 
     private final Types type;
     private final Value[] array;
@@ -48,7 +48,7 @@ public class ValueArrayByArray extends ValueArray {
 
     @Override
     public Iterator<Value> iterator() {
-        return null;
+        return new ArrayIterator(array);
     }
 
     @Override
@@ -249,8 +249,7 @@ public class ValueArrayByArray extends ValueArray {
         private final Value[] array;
 
         ArrayIterator(Value[] array) {
-            i = 0;
-            this.array = array;
+            this(0, array);
         }
 
         public ArrayIterator(int index, Value[] array) {

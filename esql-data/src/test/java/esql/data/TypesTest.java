@@ -4,7 +4,10 @@ import org.junit.jupiter.api.Test;
 
 import static esql.data.Types.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TypesTest {
     final static Types[] string_types = {
@@ -41,16 +44,42 @@ public class TypesTest {
         assertEquals(Types.of("nclob"), TYPE_NCLOB);
         assertEquals(Types.of("blob"), TYPE_BLOB);
 
+        assertTrue(Types.isLOB(Types.TYPE_BLOB));
+        assertFalse(Types.isLOB(Types.TYPE_BYTES));
+
         assertEquals(Types.of("data-tree"), TYPE_DATA_TREE);
         assertEquals(Types.of("json"), TYPE_JSON);
         assertEquals(Types.of("xml"), TYPE_XML);
+
+        IllegalArgumentException thrown = assertThrows(
+            IllegalArgumentException.class,
+           () -> Types.of("yaml"), //not valid
+           "Expected catching of invalid type"
+            );
+
+        assertTrue(thrown.getMessage().contains("Invalid type"));
     }
 
     @Test
     public void AbbreviationArrayTest() {
+        assertTrue(Types.detectArray("string[]"));
+        assertTrue(Types.detectArray("array-of-string"));
+
         assertEquals("string",Types.extractAbbreviation("string[]"));
         assertEquals("string",Types.extractAbbreviation(" string[]"));
         assertEquals("string",Types.extractAbbreviation(" string[] "));
         assertNotEquals("string",Types.extractAbbreviation("string []"));
+        //compatible declaration test
+        assertEquals("string",Types.extractAbbreviation("array-of-string"));
+        assertEquals("string",Types.extractAbbreviation(" array-of-string"));
+        assertEquals("string",Types.extractAbbreviation(" array-of-string "));
+
+        IllegalArgumentException thrown = assertThrows(
+            IllegalArgumentException.class,
+           () -> Types.extractAbbreviation("xml[]"), //not valid
+           "Expected catching of invalid type"
+            );
+
+        assertTrue(thrown.getMessage().contains("Invalid type"));
     }
 }

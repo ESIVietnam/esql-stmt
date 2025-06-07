@@ -2,17 +2,13 @@ package esql.data;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.UUID;
 
 class ValueBLOBCreator implements Closeable {
     ByteBuffer first_block = ByteBuffer.allocate(ValueLOB.MAX_BUFFERED_SIZE);

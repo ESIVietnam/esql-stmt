@@ -1,3 +1,4 @@
+
 package esql.data;
 
 import org.junit.jupiter.api.Test;
@@ -122,4 +123,49 @@ public class BinaryTest {
         nv = v.convertTo(Types.TYPE_STRING);
         assertEquals("187f", nv.stringValue());
     }
+
+    @Test
+    public void normalValueTest() {
+        ValueBytes v = ValueBytes.buildBytes(new byte[] { 0, 1, 2, 99, -76 });
+        //hexa
+        assertTrue("00010263B4".equalsIgnoreCase(v.stringValue()));
+        assertEquals(5, v.length(), "length should correct");
+        assertFalse(v.isArray(), "Must not be array");
+        assertFalse(v.isNull(), "Must be null");
+        assertFalse(v.isEmpty(), "Must be empty");
+        assertTrue(v.isTrue(), "Must be false");
+        assertTrue(v.is(Types.TYPE_BYTES), "Must be bytes");
+
+        assertFalse(v.equals(null), "Must be not equal");
+        assertTrue(v.equals(v), "Must be equal");
+
+        assertTrue(v.equals(ValueBytes.buildBytes("00010263B4")), "Must be equal");
+        assertFalse(v.equals(ValueBytes.buildBytes("00010263B5")), "Must be not equal");
+        assertFalse(v.equals(ValueBytes.buildBytes("0001")), "Must be not equal");
+        assertFalse(v.equals(ValueBytes.buildBytes("00010263B4C1")), "Must be not equal");
+        
+    }
+
+    @SuppressWarnings("unlikely-arg-type")
+    @Test
+    public void equalValueTest() {
+        ValueBytes v = ValueBytes.buildBytes(new byte[] { 0, 1, 2, 0x7f, -76 });
+
+        assertTrue(v.equals(ValueBytes.buildBytes("0001027fB4")), "Must be equal");
+
+        ValueArray array = ValueArray.buildArrayOfInteger(Types.TYPE_BYTE, 0, 1, 2, 0x7f, -76);
+        assertTrue(v.equals(array), "Must be equal");
+
+        array = ValueArray.buildArrayOfInteger(Types.TYPE_INT, 0, 1, 2, 0x7f, -76);
+        assertFalse(v.equals(array), "Must not be equal");
+
+        array = ValueArray.buildArrayOfInteger(Types.TYPE_INT, 0, 1, 2, 0x7f);
+        assertFalse(v.equals(array), "Must not be equal");
+
+        array = ValueArray.buildArrayOfInteger(Types.TYPE_BYTE, 0, 3, 2, 0x7f, -76);
+        assertFalse(v.equals(array), "Must not be equal");
+
+        assertTrue(v.equals(ValueString.buildString(Types.TYPE_STRING, "0001027fB4")), "Must be equal");
+    }
 }
+

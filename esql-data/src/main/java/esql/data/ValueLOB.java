@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Optional;
@@ -19,6 +20,12 @@ public abstract class ValueLOB extends Value implements Closeable {
     static final String[] HASHES = {
             "MD5", "SHA-1","SHA-256", "SHA-384", "SHA-512"
     };
+
+    public static MessageDigest messageDigestFromAlgorithm(int g) throws NoSuchAlgorithmException {
+        if(g < 0 || g > HASHES.length)
+            throw new IllegalArgumentException("value is not in range 0.."+HASHES.length);
+        return MessageDigest.getInstance(HASHES[g]);
+    }
 
     public static final int DEFAULT_HASH_ALGO = MD5;
     public static final int[] DEFAULT_HASH_ALGOS = { MD5 };
@@ -106,10 +113,11 @@ public abstract class ValueLOB extends Value implements Closeable {
             int c = Long.compareUnsigned(this.size(), ((ValueLOB) o).size());
             if(c != 0)
                 return c;
+            //comparing LOBs by comparing its hash.
             if(preHash.length > 0 && ((ValueLOB) o).preHash.length > 0) { //compare hashed
-                for(int algos = 0;algos < HASHES.length; algos++) {
+                for(int algos = HASHES.length - 1; algos >= 0; algos--) {
                     if(preHash.length <= algos+1 || ((ValueLOB) o).preHash.length <= algos+1)
-                        break;
+                        continue;
                     byte[] h1 = preHash[algos];
                     byte[] h2 = ((ValueLOB) o).preHash[algos];
                     if(h1 != null && h2 != null)
@@ -125,10 +133,14 @@ public abstract class ValueLOB extends Value implements Closeable {
                 throw new RuntimeException("forceHash for compare error "+e.toString());
             }*/
         }
+        else if(o instanceof ValueBytes) { //using compareTo from ValueBytes.
+            return -((ValueBytes)o).compareTo(this);
+        }
         //LOB always bigger than others
         return 1;
     }
 
+    @SuppressWarnings("unlikely-arg-type")
     @Override
     public boolean equals(Object obj) {
         if(obj == null)
@@ -148,6 +160,9 @@ public abstract class ValueLOB extends Value implements Closeable {
                         return Arrays.equals(h1, h2);
                 }
             }
+        }
+        else if(obj instanceof ValueBytes) { //using equals from ValueBytes.
+            return ((ValueBytes)obj).equals(this);
         }
         return false;
     }
@@ -185,10 +200,40 @@ public abstract class ValueLOB extends Value implements Closeable {
     }
 
     /**
+     * Strongest hash pre-calculated algorithm
+     * @return -1 if not found
+     */
+    public int getStrongestAlgorithmAvailableHash() {
+        int g = HASHES.length-1;
+        while (g >= 0) {
+            if(g < preHash.length - 1 && preHash[g] != null)
+                break;
+            g--;
+        }
+        return g;
+    }
+
+    /**
+     * Weakest hash pre-calculated algorithm
+     * @return -1 if not found
+     */
+    public int getWeakestAlgorithmAvailableHash() {
+        int g = 0;
+        while (g < HASHES.length-1) {
+            if(g < preHash.length - 1 && preHash[g] != null)
+                break;
+            g++;
+        }
+        if(g>=preHash.length)
+            return -1;
+        return g;
+    }
+
+    /**
      * ensure that calculate hash (md5, sha1, sha256, etc) and return correct value.
      * it may force the LOB to calculate registered hashes (if not calculated yet).
      *
-     * @return true if ensure, false is it can not ensure.
+     * @return hash value of the LOB
      * @throws IOException
      */
     public abstract byte[] forceHash(int algo) throws IOException, NoSuchAlgorithmException;

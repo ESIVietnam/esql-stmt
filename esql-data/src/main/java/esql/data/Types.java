@@ -26,8 +26,8 @@ public enum Types {
     TYPE_NSTRING ("nstring"),
 
     TYPE_DATA_TREE ("data-tree"),
-    TYPE_XML ("xml"), //sub-type of DATATREE
-    TYPE_JSON ("json"),//sub-type of DATATREE
+    TYPE_XML ("xml"), //sub-type of DATA_TREE
+    TYPE_JSON ("json"),//sub-type of DATA_TREE
 
     TYPE_CLOB ("clob"),
     TYPE_NCLOB ("nclob"),
@@ -70,7 +70,7 @@ public enum Types {
         if(type_str.endsWith(EXT_ARRAY))
             abbr = type_str.substring(0,type_str.length()-2); //cat 2 ky tu cuoi
         else if(type_str.startsWith(PREF_ARRAY))
-            abbr = type_str.substring(9); //cat 9 ky tu dau
+            abbr = type_str.substring(PREF_ARRAY.length()); //cat 9 ky tu dau
         if(abbr != null) {
             if (lookup.containsKey(abbr) && isDataTree(lookup.get(abbr)))
                 throw new IllegalArgumentException("Invalid type array type of \"" + abbr + "\"");
@@ -80,6 +80,7 @@ public enum Types {
     }
 
     public static boolean detectArray(String type_str) {
+        type_str = type_str.trim();
         return(type_str.endsWith(EXT_ARRAY) || type_str.startsWith(PREF_ARRAY));
     }
 
