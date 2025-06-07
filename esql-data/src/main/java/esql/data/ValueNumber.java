@@ -2,14 +2,8 @@ package esql.data;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.regex.Pattern;
 
 public abstract class ValueNumber extends Value {
-    /*
-     * This patterns for checking correct format
-     */
-    final static Pattern INTEGER_PATTERN = Pattern.compile("^\\s*[+-]?\\s*\\d+\\s*$");
-    final static Pattern DECIMAL_PATTERN = Pattern.compile("^\\s*([+-]?\\s*\\d+)?\\.\\d+\\s*$");
 
     public static final ValueNumber NULL_BYTE = new ValueNULLNumber(Types.TYPE_BYTE);
     public static final ValueNumber NULL_SHORT = new ValueNULLNumber(Types.TYPE_SHORT);

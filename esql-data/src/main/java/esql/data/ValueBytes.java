@@ -14,7 +14,7 @@ import java.util.stream.IntStream;
  * It is always input or output to hex-string.
  */
 public class ValueBytes extends Value {
-    public static final Pattern HEX_STRING_MATCH = Pattern.compile("^[0-9A-Fa-f]+$");
+    private static final long serialVersionUID = 1L;
 
     private final static byte[] EMPTY_BYTES = new byte[0];
     static final ValueBytes EMPTY_BINARY_STRING = new ValueBytes(EMPTY_BYTES);
@@ -271,8 +271,11 @@ public class ValueBytes extends Value {
 
     /**
      * big endian only conversion
+     *
+     * @param hex hex string (without 0x prefix)
+     * @return byte array
      */
-    public static byte[] hexToBytes(String hex) {
+    public static byte[] hexToBytes(CharSequence hex) {
         byte[] buff = new byte[Math.floorDiv(hex.length()+1, 2)];
         hexToBytes(hex, buff, 0);
         return buff;
@@ -280,8 +283,21 @@ public class ValueBytes extends Value {
 
     /**
      * big endian only conversion
+     *
+     * @param hex hex string (without 0x prefix)
+     * @param from start index (inclusive)
+     * @param to end index (inclusive)
      */
-    public static int hexToBytes(String hex, byte[] buf, int pos) {
+    public static byte[] hexToBytes(CharSequence hex, int from, int to) {
+        byte[] buff = new byte[Math.floorDiv(to - from +1, 2)];
+        hexToBytes(hex, buff, from);
+        return buff;
+    }
+
+    /**
+     * big endian only conversion
+     */
+    public static int hexToBytes(CharSequence hex, byte[] buf, int pos) {
         int i = pos;
         for (int j = 0; j < hex.length(); j++) {
             if(i>=buf.length)

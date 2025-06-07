@@ -26,8 +26,8 @@ public enum Types {
     TYPE_NSTRING ("nstring"),
 
     TYPE_DATA_TREE ("data-tree"),
-    TYPE_XML ("xml"), //sub-type of DATATREE
-    TYPE_JSON ("json"),//sub-type of DATATREE
+    TYPE_XML ("xml"), //sub-type of DATA_TREE
+    TYPE_JSON ("json"),//sub-type of DATA_TREE
 
     TYPE_CLOB ("clob"),
     TYPE_NCLOB ("nclob"),
