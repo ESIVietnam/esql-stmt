@@ -64,6 +64,7 @@ public class ValueString extends Value {
     public boolean isTrue() {
         return !isEmpty();
     }
+    
 
     @Override
     public Value convertTo(Types type) {
