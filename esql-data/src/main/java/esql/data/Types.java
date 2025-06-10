@@ -140,6 +140,14 @@ public enum Types {
         return isInteger(type) || isDecimal(type);
     }
 
+    /**
+     * Check if the type is a decimal type (float, double, or decimal).
+     * This includes floating-point types and fixed-point decimal types.
+     * * @see #isLongInteger(Types)
+     * * @see #isInteger(Types)
+     * @param type the type to check
+     * @return true if the type is a decimal type, false otherwise
+     */
     public static boolean isDecimal(Types type) {
         switch(type) {
             case TYPE_DECIMAL:
@@ -152,6 +160,33 @@ public enum Types {
         return false;
     }
 
+    /**
+     * Check if the type is a long integer type (long, unsigned long, or unsigned integer).
+     * This includes types that can represent large integers, it is stored as long or BigInteger.
+     *
+     * @see #isInteger(Types)
+     * @param type the type to check
+     * @return true if the type is a long integer type, false otherwise
+     */
+    public static boolean isLongInteger(Types type) {
+        switch(type) {
+            case TYPE_LONG:
+            case TYPE_UINT:
+            case TYPE_ULONG:
+                return true;
+            default:
+                break;
+        }
+        return false;
+    }
+
+    /**
+     * Check if the type is an integer type (byte, unsigned byte, short, unsigned short, int, unsigned int, long, unsigned long).
+     * This includes all types that can represent integer values and long values.
+     *
+     * @param type the type to check
+     * @return true if the type is an integer type, false otherwise
+     */
     public static boolean isInteger(Types type) {
         switch(type) {
             case TYPE_BYTE:

@@ -19,7 +19,7 @@ public class ValueBoolean extends ValueNumber {
 
     public static final ValueBoolean BOOL_TRUE = new ValueBoolean(true);
     public static final ValueBoolean BOOL_FALSE = new ValueBoolean(false);
-    public static final ValueBoolean NULL_BOOLEAN = new ValueNULLBoolean();
+    public static final ValueNULLBoolean NULL_BOOLEAN = new ValueNULLBoolean();
 
     enum BooleanChoice { TRUE_FALSE, YES_NO, ON_OFF, NUM0_1 };
 
@@ -42,19 +42,48 @@ public class ValueBoolean extends ValueNumber {
         return val ? STR_TRUE : STR_FALSE;
     }
 
+    /**
+     * CompareTo implementation follows Java Language Specification (JLS).
+     * For ValueBoolean, it compares to other ValueBoolean, ValueNumber, and ValueString.
+     * ValueNumber is compared by differ between boolean (1:0) to its long integer value.
+     *  eg. TRUE (1) is greater than 0, and FALSE (0) is less than 1.
+     *     TRUE (1) is less than any number greater than 1, and FALSE (0) is greater than any number less than 0.
+     *  This allows lexical ordering of boolean values with numbers.
+     *
+     * @param o the object to be compared.
+     * @return 0 if both are equal, -1 or less if this is less than o, 1 or more if this is greater than o.
+     */
     @Override
     public int compareTo(Value o) {
+        if(o == this)
+            return 0;
         if(o == null || o.isNull())
             return 1;
-        if(o.isTrue()) {
-            if (isTrue())
+        if(o instanceof ValueBoolean) {
+            if (this.val == ((ValueBoolean) o).val)
                 return 0;
-            else
-                return -1;
+            return this.val ? 1 : -1;
         }
-        else if(isTrue())
-            return 1;
-        return 0;
+        if(o instanceof ValueNumber) {
+            long theLongValue;
+            if (Types.isLongInteger(o.getType()) || Types.isDecimal(o.getType())) {
+                theLongValue = ((ValueNumber) o).longValue();
+            }
+            else
+                theLongValue = ((ValueNumber) o).longValue();
+            //assuming TRUE = 1, FALSE = 0
+
+            if (theLongValue < Integer.MAX_VALUE
+                && theLongValue > Integer.MIN_VALUE) {
+                return (val ? 1 : 0) - (int) theLongValue;
+            }
+            else if (theLongValue >= Integer.MAX_VALUE)
+                return Integer.MIN_VALUE;
+            else //if (theLongValue <= Integer.MIN_VALUE)
+                return Integer.MAX_VALUE;
+        }
+
+        return this.val == o.isTrue() ? 0 : (this.val ? 1 : -1);
     }
 
     @Override
@@ -67,9 +96,9 @@ public class ValueBoolean extends ValueNumber {
             return this.val == ((ValueBoolean) obj).val;
         if (obj instanceof ValueNumber)
             return this.val == ((ValueNumber) obj).booleanValue();
-        if (obj instanceof Value)
-            return !((Value) obj).isNull() && this.val == ((ValueNumber) obj).isTrue();
-        return this.val == isTrueString(obj.toString());
+        if (obj instanceof ValueString)
+            return this.val == isTrueString(((ValueString) obj).stringValue());
+        return !((Value) obj).isNull() && this.val == ((Value) obj).isTrue();
     }
 
     @Override
@@ -158,18 +187,44 @@ public class ValueBoolean extends ValueNumber {
             return Value.STRING_OF_NULL;
         }
 
+        /**
+         * equals implementation follows Java Language Specification (JLS).
+         * This is not compatible with compareTo, as NULL is not equal to any other value.
+         *
+         * @param obj the object to be compared.
+         * @return true if both are null, false otherwise.
+         */
         @Override
         public boolean equals(Object obj) {
-            if(obj == this)
+            if(obj == this || obj == null)
                 return true;
+            if(obj instanceof Value)
+                return ((Value) obj).isNull();
             return false;
         }
 
+        /**
+         * CompareTo implementation follows Java Language Specification (JLS).
+         *
+         * This is compatible with equals, as NULL is equal only to other NULL values.
+         * Otherwise it is less than any other value.
+         *
+         * @param o the object to be compared.
+         * @return 0 if both are null
+         */
         @Override
         public int compareTo(Value o) {
-            if(o != null && o.isNull())
+            //NULL compareTo NULL is 0, as per JLS.
+            if(o == this)
                 return 0;
-            return -1;
+            //this is NULL Boolean, only comparing to other null are equal.
+            if(o == null || o.isNull())
+                return 0; //same as false.
+            if (o instanceof ValueNumber) {
+                return Integer.MIN_VALUE; //NULL is much less than any boolean or number value.
+            }
+
+            return -1; //less than any other value, but only -1 if it is a ValueString or other non-null value.
         }
 
         @Override

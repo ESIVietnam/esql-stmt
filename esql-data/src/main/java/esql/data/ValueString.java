@@ -25,8 +25,8 @@ public class ValueString extends Value {
             Charset.forName(Optional.ofNullable(System.getenv("ESQL_STRING_NATIONAL_CHARSET"))
                     .orElse(StandardCharsets.UTF_8.name()));
 
-    private static final ValueString EMPTY_STRING = new ValueString(false, "");
-    private static final ValueString EMPTY_NSTRING = new ValueString(true, "");
+    public static final ValueString EMPTY_STRING = new ValueString(false, "");
+    public static final ValueString EMPTY_NSTRING = new ValueString(true, "");
 
     private final boolean national;
     private final String value;
@@ -36,11 +36,11 @@ public class ValueString extends Value {
         this.value = val;
     }
 
-    public static final Value buildString(Types type, String val) {
+    public static final ValueString buildString(Types type, String val) {
         if(!Types.isString(type))
             throw new IllegalArgumentException("not for type other than string/nstring");
         if(val == null)
-            return Value.nullOf(type);
+            return (ValueString) Value.nullOf(type);
         if(val.isEmpty())
             return Types.TYPE_NSTRING.equals(type) ? EMPTY_NSTRING:EMPTY_STRING;
         return new ValueString(false, val);
