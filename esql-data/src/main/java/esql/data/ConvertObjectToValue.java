@@ -40,13 +40,15 @@ public class ConvertObjectToValue implements Function<Object, Value> {
             value = ValueNumber.buildNumber(type, ((BigDecimal) o));
         else if(o instanceof BigInteger)
             value = ValueNumber.buildNumber(type, ((BigInteger) o));
-        else if(o instanceof Float || o instanceof Double)
-            value = ValueNumber.buildNumber(type, ((Float) o).doubleValue());
+        else if(o instanceof Float)
+            value = ValueNumber.buildNumber(type, (Float) o);
+        else if(o instanceof Double)
+            value = ValueNumber.buildNumber(type, (Double) o);
         else if(o instanceof Number)
             value = ValueNumber.buildNumber(type, ((Number) o).longValue());
         //Boolean
         else if(o instanceof Boolean)
-            value = ValueBoolean.buildBoolean(((Boolean) o).booleanValue());
+            value = ValueBoolean.buildBoolean((Boolean) o);
         //binary string
         else if(o instanceof byte[])
             value = ValueBytes.buildBytes((byte[])o);

@@ -7,25 +7,53 @@ Java Language Specification (JLS) requires that the `compareTo` method must be c
 
 For a class implementing `Comparable<T>`, the `compareTo()` method must follow:
 
-### 1. **Antisymmetry**
+### 1. Ordering Rules
 
-```java
-Integer a, b;
-int result = a.compareTo(b);
+| Property                    | What it means (informally)                                                                                                                                                                          |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Antisymmetry**            | `sgn(x.compareTo(y)) == -sgn(y.compareTo(x))` for all non-null `x`, `y`.<br>If `x` says it’s less than `y`, then `y` must say it’s greater than `x`; if one says they’re equal, the other must too. |
+| **Transitivity**            | If `x.compareTo(y) > 0` **and** `y.compareTo(z) > 0`, then `x.compareTo(z) > 0` (similarly for `< 0`).                                                                                              |
+| **Consistency with itself** | The sign of `x.compareTo(y)` must not change while neither `x` nor `y` is modified and no information used in the comparison is mutated.                                                            |
 
-// Then:
-a.compareTo(b) == -b.compareTo(a)
-```
+### 2. Relationship with `equals`
 
-This behavior is **required** to ensure correct behavior in sorting, binary search, and data structures like `TreeSet`, `TreeMap`.
+* If `x.compareTo(y) == 0`, then **it is strongly recommended** (but not strictly required) that `x.equals(y)` is `true`.
+  *Why?* Collections like `TreeSet` and `TreeMap` rely on `compareTo` for uniqueness; violating this recommendation can produce odd behavior (e.g., duplicate “equal” objects).
 
-### 2. Consistency with `equals()`
+* The converse is **not required**—two objects can be equal according to `equals` yet return a non-zero `compareTo` (though you risk breaking the contract of sorted containers).
 
-If `compareTo(a, b) == 0`, it **should be consistent** with `a.equals(b)`, though it's **not strictly required**. But Java APIs (e.g., `TreeSet`) often assume it.
+| Case | `compareTo()` | `equals()` | Valid?           | Recommended?           |
+| ---- | ------------- | ---------- | ---------------- | ---------------------- |
+| 1    | `== 0`        | `== false` | ✅ Yes            | ⚠️ Not recommended     |
+| 2    | `== 0`        | `== true`  | ✅ Yes            | ✅ Strongly recommended |
+| 3    | `!= 0`        | `== true`  | ✅ Legal but rare | ⚠️ Can cause bugs      |
+| 4    | `!= 0`        | `== false` | ✅ Yes            | ✅ Normal               |
+
+### 3. Null Handling
+
+* Passing `null` **must** throw `NullPointerException`. The contract explicitly says that `compareTo` should regard `null` as illegal—unlike some comparator strategies that treat `null` as first or last.
+
+### 4. Exceptions
+
+* Aside from `NullPointerException`, a well-behaved `compareTo` should be side-effect free and must not throw other unchecked exceptions for ordinary valid inputs.
+
+---
+
+## Idiomatic Implementation Checklist
+
+1. **Use the same key fields as `equals`** (and in the same priority order).
+2. **Return only -1, 0, 1 when practical**—but any negative/zero/positive int is allowed.
+3. **Beware of integer overflow** when subtracting numeric fields. Prefer `Integer.compare(a, b)` or `Long.compare(...)`.
+4. **Maintain immutability for ordering fields** or document clearly if mutation affects ordering.
 
 ## How the order of Value and CompareTo is defined
 
 The Value object is multi-poly-type, which means it can be compared to other values of the same type or different types. The `compareTo` method is defined to handle these comparisons in a way that respects the natural ordering of the values.
+On other side, the `equals` compares the equivalent of data type and its value, so the result may differ from `compareTo`. The Value is should never be "key" of Map but a member of a Set.
+
+These below rules are design for best suited with multiples data types:
+
+### The rules of compareTo
 
 ```java
 public enum Types {
@@ -59,34 +87,46 @@ public enum Types {
 }
 ```
 
+> Generally, in ESQL Data, the order of types' comparison is: (NULL) < Negative Number < Boolean <= Positive number <= (String or convertible to string) - (Object) - (LOB).
+
 The order of Types and its value for comparing is defined as follows (from lowest to highest):
 
 1. NULL: `null` values of any type are considered less than any non-null value. But the result of comparing between null to other types is dependent on the target value's type.
-  * To other null values: 0 always.
-  * To String or Data Tree: -1 always.
-  * To Number and Boolean and Date Time: Integer.MIN_VALUE always.
-  * To LOB types: Integer.MIN_VALUE always.
-2. Strings: `TYPE_STRING` and `TYPE_NSTRING` are compared lexicographically themself. They are large than NULL and less than any numeric type. For empty string (treated as `false` of BooleanValue), it is considered less than any non-empty string.
+  * To `null` values: 0 always. But v.equals() only returns true if same type class (string vs string, number vs number, etc).
+  * All other types: Integer.MIN_VALUE always.
+
+2. Boolean Type: treated as number 0 or 1.
+  * Compare to Null: Integer.MAX_VALUE always.
+  * Boolean and Numeric types are compared based on their value. For example, Boolean(true) is considered greater than Boolean(false), and greater than Number(0) or Number(-100) as well. Boolean(false) is same as Number(0).
+  * Compare to String or NString: False compare to empty string = 0. Boolean true is greater than empty string (1), but less than any non-empty string (-1).
+  * All other types: False compare to empty LOB/Data Tree/Array = 0. otherwise -1.
+  
+3. Numeric Type: Numeric types are compared based on their value.
+  * Compare to Null: Integer.MAX_VALUE always.
+  * Compare to Boolean: Boolean false/true are treated as numbers 0 or 1.
+  * Compare to String or NString: they are converted to their numeric representation (floating point value of 1200 are 1.2E3) and compared as lexicographically.
+  * Compare to other numeric types: Using Integer.compare or Long.compare which convertible to Long.
+  * All other types: always -1.
+  
+4. Strings: `TYPE_STRING` and `TYPE_NSTRING` are compared lexicographically themself. They are large than NULL and less than any numeric type. For empty string (treated as `false` of BooleanValue), it is considered less than any non-empty string.
+  * Compare to Null: Integer.MAX_VALUE always.
   * For example, "a" < "b", "abc" < "abcd", "abc" < "", and "" < "a", it gives the 1 or -1 result.
-  * To null: 1 always.
   * To LOB types: using SHA-256 lower-case-hexa hash value with lexicographical order.
   * To Data Tree types: using string representation (JSON or XML) with lexicographical order.
   * To other types: converted to String and compared lexicographically.
-5. Numeric Type and Boolean Type (treated as number 0 or 1): Numeric types are compared based on their value. For example, Boolean(true) is considered greater than Boolean(false) and Number(0) or Number(-100). Boolean(false) is same as Number(0).
-  * Compare to String or NString: they are converted to their numeric representation (floating point value of 1200 are 1.2E3) and compared as lexicographically.
-  * Compare to Null: Integer.MAX_VALUE always.
-  * Compare to other numeric types: they are compared based on their numeric value (the boundary of result is integer 32 bits range).
-  * Compare to Data Tree: often -1 because JSON starting with "{" or "<" is greater than any numeric value (ASCII value of '{' is 123 and '<' is 60, which is greater than any digit '0'-'9').
-6. Date and Time Types: they are converted to their numeric representation (the milliseconds since epoch) and compared as numbers when comparing to Number or Boolean or Null.
+
+5. Date and Time Types: they are converted to their numeric representation (the milliseconds since epoch) and compared as numbers when comparing to Number or Boolean or Null.
   * Compare to Null: Integer.MAX_VALUE always.
   * Compare to String: converted to their numeric representation (the milliseconds since epoch) and compared as numbers.
   * Compare to Number or Boolean: based on their numeric representation (milliseconds since epoch).
-3. Data Tree Types: `TYPE_DATA_TREE`, `TYPE_XML`, and `TYPE_JSON` are compared together based on their string representation (JSON or XML). They treated as strings.
-4. LOB Types: `TYPE_CLOB`, `TYPE_NCLOB`, `TYPE_BLOB`, and `TYPE_BYTES` are compared based on their SHA-256 hash value when comparing to Strings.
-* To Null: Integer.MAX_VALUE always.
-* To String or NString, Data Tree: using SHA-256 lower-case-hexa hash value with lexicographical order.
-* To Number or Boolean or Date Time: always -1.
-* 
+
+6. Data Tree Types: `TYPE_DATA_TREE`, `TYPE_XML`, and `TYPE_JSON` are compared together based on their string representation (JSON or XML). They treated as strings.
+
+7. LOB Types: `TYPE_CLOB`, `TYPE_NCLOB`, `TYPE_BLOB`, and `TYPE_BYTES` are compared based on their SHA-256 hash value when comparing to Strings.
+  * To Null: Integer.MAX_VALUE always.
+  * To String or NString, Data Tree: using SHA-256 lower-case-hexa hash value with lexicographical order.
+  * To Number or Boolean or Date Time: always -1.
+
 > Note: String "1" is greater than Number(0) but " 1" (space before 1) is less than Number(0). This is because the String is compared lexicographically, and space character has a lower ASCII value than digit '1'.
 
 ### Example comparisons
