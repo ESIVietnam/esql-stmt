@@ -26,6 +26,11 @@ jobs:
           server-id: github-esql-stmt
           settings-path: ${{ github.workspace }}
 
+      - name: Build with Maven
+        run: mvn -B --no-transfer-progress package install -s $GITHUB_WORKSPACE/settings.xml --file pom.xml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v4
         env:
@@ -38,7 +43,7 @@ jobs:
             -Dsonar.projectKey=ESIVietnam_esql-stmt
             -Dsonar.organization=esivietnam
             -Dsonar.language=java
-            -Dsonar.java.binaries=**/target/classes
+            -Dsonar.java.binaries=esql-data/target/classes
             # Comma-separated paths to directories containing main source files.
             #-Dsonar.sources= # optional, default is project base directory
             # When you need the analysis to take place in a directory other than the one from which it was launched
@@ -47,8 +52,3 @@ jobs:
             #-Dsonar.tests= # optional. For more info about Code Coverage, please refer to https://docs.sonarcloud.io/enriching/test-coverage/overview/
             # Adds more detail to both client and server-side analysis logs, activating DEBUG mode for the scanner, and adding client-side environment variables and system properties to the server-side log of analysis report processing.
             #-Dsonar.verbose= # optional, default is false
-
-      - name: Build with Maven
-        run: mvn -B --no-transfer-progress package install -s $GITHUB_WORKSPACE/settings.xml --file pom.xml
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
